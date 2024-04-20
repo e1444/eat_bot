@@ -1,3 +1,5 @@
+# Copyright (c) 2019 Valentin B.
+
 import asyncio
 import functools
 import itertools
