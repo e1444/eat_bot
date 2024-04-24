@@ -67,6 +67,14 @@ class MiscCog(commands.Cog):
     async def snake(self, interaction: discord.Interaction):
         s = random.choice(['*SnakeDying*'])
         await interaction.response.send_message(s)
+        
+    @app_commands.command(
+        name='minor',
+        description='you. are. a minor'
+    )
+    async def minor(self, interaction: discord.Interaction):
+        s = 'https://tenor.com/view/toy-story-you-are-a-toy-you-are-a-minor-minor-meme-gif-24627767'
+        await interaction.response.send_message(s)
     
     @app_commands.command(
         name='clone',

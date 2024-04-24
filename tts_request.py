@@ -14,7 +14,7 @@ def query_models(models, query: str):
     data = [model for model in models if query.lower() in model['title'].lower()]
     return data
 
-async def send_request(model):
+async def send_request(model, text: str):
     idempotency_token = str(uuid.uuid4())
     
     url = 'https://api.fakeyou.com/tts/inference'
@@ -25,7 +25,7 @@ async def send_request(model):
     data = {
         'uuid_idempotency_token': idempotency_token,
         'tts_model_token': model['model_token'],
-        'inference_text': 'Hello. My name is Snake Winning.'
+        'inference_text': text
     }
 
     async with aiohttp.ClientSession() as session:
@@ -55,22 +55,21 @@ async def poll_until_success(job_token: str):
     return data
 
 
-def audio_url(audio_path: str):
+def _format_audio_url(audio_path: str):
     return f'https://storage.googleapis.com/vocodes-public{audio_path}'
     
 
-async def main():
+async def request_tts_url(text: str):
     data = await request_list()
     data = query_models(data['models'], 'Yoda (Version 2.0)')
-    model = data[0]
-    data = await send_request(model)
     
-    # print(json.dumps(data, indent=4))
+    model = data[0]
+    data = await send_request(model, text)
     
     data = await poll_until_success(data['inference_job_token'])
-    # print(json.dumps(data, indent=4))
+    url = _format_audio_url(data.get('state').get('maybe_public_bucket_wav_audio_path'))
     
-    print(audio_url(data.get('state').get('maybe_public_bucket_wav_audio_path')))
+    return url
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    asyncio.run(request_tts_url())

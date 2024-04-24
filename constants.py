@@ -14,7 +14,7 @@ try:
 except LookupError:
     nltk.download('wordnet')
 
-EXTENSIONS = ('extensions.snake', 'extensions.misc', 'extensions.shark', 'extensions.eat', 'extensions.music', 'extensions.america')
+EXTENSIONS = ('extensions.snake', 'extensions.misc', 'extensions.shark', 'extensions.eat', 'extensions.music', 'extensions.tts', 'extensions.america')
 
 GUILDS = [discord.Object(id=1223665705048735846), discord.Object(id=1220725949323022336), discord.Object(id=1147644134312652840)]
 ADMIN_ID = 319162137392054272
