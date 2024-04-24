@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
+from bot import Bot
 
 import asyncio
 import audioop
@@ -9,8 +10,6 @@ from typing import Optional
 import tts_request
 
 YODA_SNAKE_WINNING_URL = 'https://storage.googleapis.com/vocodes-public/media/7/n/e/f/6/7nef61js0hbq9vvvv5666xbd29p44bfs/fakeyou_7nef61js0hbq9vvvv5666xbd29p44bfs.wav'
-
-LIST = tts_request.request_list()
 
 class TTSSource(discord.PCMVolumeTransformer):
     FFMPEG_OPTIONS = {
@@ -72,15 +71,15 @@ class MultiSource(discord.AudioSource):
     
 class VoiceState:
     def __init__(self, bot: commands.Bot, ctx: discord.Interaction):
-        self.bot: commands.Bot = bot
+        self._bot: commands.Bot = bot
         self._ctx: discord.Interaction = ctx
         self.voice: Optional[discord.VoiceClient] = None
         self.source: Optional[MultiSource] = None
 
     
 class TTSCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
+    def __init__(self, bot: Bot):
+        self.bot: Bot = bot
         self.voice_states = {}
         
         print('---\tTTSCog loaded\t\t---')
@@ -98,26 +97,6 @@ class TTSCog(commands.Cog):
         return state
         
     @app_commands.command(
-        name='join',
-        description='Join a voice channel'
-    )
-    async def summon(self, ctx: discord.Interaction, *, channel: discord.VoiceChannel=None):
-        voice_state = self.get_voice_state(ctx)
-        
-        if not channel and not ctx.user.voice:
-            await ctx.response.send_message('You are neither connected to a voice channel nor specified a channel to join.', ephemeral=True)
-
-        destination = channel or ctx.user.voice.channel
-        
-        if voice_state.voice:
-            await voice_state.voice.move_to(destination)
-            return
-        else:
-            voice_state.voice = await destination.connect()
-            
-        await ctx.response.send_message(f'Connected to <#{destination.id}>')
-        
-    @app_commands.command(
         name='tts',
         description='TTS a message'
     )
@@ -125,29 +104,30 @@ class TTSCog(commands.Cog):
         await ctx.response.defer()
         url = await tts_request.request_tts_url(text)
         source = TTSSource.create_source(ctx, url)
-        voice_state = self.get_voice_state(ctx)
-        voice_state.voice.play(source)
+        
+        if not await self.bot.audio_player._is_joined(ctx):
+            await self.bot.audio_player._join(ctx)
+            
+        self.bot.audio_player._play(ctx, source)
         
         await ctx.followup.send(content='Message spoken')
         
-    # @app_commands.command(
-    #     name='sample',
-    #     description='play a sound'
-    # )
-    # async def test(self, ctx: discord.Interaction):
-    #     await ctx.response.defer()
-    #     url = YODA_SNAKE_WINNING_URL
-    #     source = TTSSource.create_source(ctx, url)
-    #     voice_state = self.get_voice_state(ctx)
+    @app_commands.command(
+        name='sample',
+        description='play a sound'
+    )
+    async def test(self, ctx: discord.Interaction):
+        await ctx.response.defer()
+        url = YODA_SNAKE_WINNING_URL
+        source = TTSSource.create_source(ctx, url)
         
-    #     if not voice_state.source or voice_state.source._done:
-    #         voice_state.source = MultiSource([source])
-    #         voice_state.voice.play(voice_state.source)
-    #     else:
-    #         voice_state.source.add_source(source)
+        if not await self.bot.audio_player._is_joined(ctx):
+            await self.bot.audio_player._join(ctx)
         
-    #     await ctx.followup.send(content='Acknowledged')
+        await self.bot.audio_player._play(ctx, source)
+        
+        await ctx.followup.send(content='Acknowledged')
         
         
-async def setup(bot: commands.Bot):
+async def setup(bot: Bot):
     await bot.add_cog(TTSCog(bot))

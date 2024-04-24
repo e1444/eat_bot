@@ -3,6 +3,7 @@ from discord.ext import commands
 from typing import *
 
 from constants import *
+from player import AudioPlayer
 
 class Bot(commands.Bot):
     def __init__(self):
@@ -13,6 +14,8 @@ class Bot(commands.Bot):
         intents.members = True
 
         super().__init__(command_prefix='$', intents=intents)
+        
+        self.audio_player: AudioPlayer = AudioPlayer(self)
         
     async def setup_hook(self) -> Coroutine[Any, Any, None]:
         # load extensions
