@@ -80,7 +80,7 @@ class MiscCog(commands.Cog):
         name='clone',
         description='Clone'
     )
-    async def impersonate(self, interaction: discord.Interaction, name:str, image_url: str, message: str):
+    async def impersonate(self, interaction: discord.Interaction, name: str, image_url: str, message: str):
         await interaction.response.send_message('Acknowledged')
         image_data = requests.get(image_url).content
         webhook = await interaction.channel.create_webhook(name=name, avatar=image_data)
