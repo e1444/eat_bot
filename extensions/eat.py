@@ -89,6 +89,7 @@ class EatCog(commands.Cog):
                 json.dump(self.counter, file)
                 
             s = re.sub(self.eat_pattern, lambda x: f'**{x.group().upper()}{generate_punc(4)}**', s)
+            s = re.sub(double_star_pattern, '', s)
             
             await message.channel.send(s)
         
