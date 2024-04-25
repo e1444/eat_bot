@@ -19,6 +19,7 @@ EXTENSIONS = ('extensions.snake',
               'extensions.shark', 
               'extensions.eat', 
               'extensions.music', 
+            #   'extensions.old_music', 
               'extensions.tts', 
               'extensions.america')
 

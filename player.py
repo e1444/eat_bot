@@ -9,7 +9,7 @@ from typing import Optional, Callable, Any
 
 class MultiSource(discord.AudioSource):
     def __init__(self, sources: list[discord.AudioSource], *, volume: float = 1):
-        self.sources: discord.AudioSource = sources
+        self.sources: list[discord.AudioSource] = sources
         self._volume: float = volume
         self._done: bool = False
         
@@ -76,6 +76,10 @@ class AudioPlayer:
         voice_state = self._get_voice_state(ctx)
         return bool(voice_state.voice)
     
+    async def _is_playing(self, ctx):
+        voice_state = self._get_voice_state(ctx)
+        return voice_state.voice.is_playing()
+    
     async def _join(self, ctx: discord.Interaction, *, channel: discord.VoiceChannel=None):
         voice_state = self._get_voice_state(ctx)
         
@@ -112,6 +116,13 @@ class AudioPlayer:
         voice_state = self._get_voice_state(ctx)
         if voice_state.voice.is_paused():
             voice_state.voice.resume()
+    
+    async def _stop(self, ctx: discord.Interaction):
+        voice_state = self._get_voice_state(ctx)
+        if voice_state.voice.is_playing():
+            voice_state.voice.stop()
+            
+        voice_state.source = None
         
     async def _play(self, ctx: discord.Interaction, source: discord.AudioSource, *, after: Optional[Callable[[Optional[Exception]], Any]] = None):
         voice_state = self._get_voice_state(ctx)

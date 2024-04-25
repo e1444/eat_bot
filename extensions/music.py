@@ -1,5 +1,3 @@
-# Copyright (c) 2019 Valentin B.
-
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -213,9 +211,8 @@ class QueueManager:
     def volume(self, value: float):
         self._volume = value
 
-    @property
-    def is_playing(self):
-        return self.voice and self.current
+    def is_playing(self, ctx: discord.Interaction):
+        return self.current and self.bot.audio_player._is_playing(ctx)
 
     async def audio_player_task(self):
         while True:
@@ -248,11 +245,9 @@ class QueueManager:
 
         self.next.set()
 
-    def skip(self):
-        self.skip_votes.clear()
-
-        if self.is_playing:
-            self.voice.stop()
+    def skip(self, ctx: discord.Interaction):
+        if self.is_playing(ctx):
+            self.bot.audio_player._stop(ctx)
 
     async def stop(self):
         self.songs.clear()
@@ -304,14 +299,14 @@ class MusicCog(commands.Cog):
         description='Displays the currently playing song'
     )
     async def _now(self, ctx: discord.Interaction):
-        await ctx.response.send_message(embed=ctx.voice_state.current.create_embed())
+        qm = self.get_queue_manager(ctx)
+        await ctx.response.send_message(embed=qm.current.create_embed())
 
     @app_commands.command(
         name='pause',
         description='Pause the music player'
     )
     async def _pause(self, ctx: discord.Interaction):
-        """Pauses the currently playing song."""
         await self.bot.audio_player._pause(ctx)
         await ctx.response.send_message(f'Paused the music player.')
 
@@ -320,106 +315,99 @@ class MusicCog(commands.Cog):
         description='Resume the music player'
     )
     async def _resume(self, ctx: discord.Interaction):
-        """Resumes a currently paused song."""
         await self.bot.audio_player._resume(ctx)
         await ctx.response.send_message(f'Resumed the music player.')
 
-    # todo
-    # @commands.command(name='stop', aliases=['close'])
-    # # @commands.has_permissions(manage_guild=True)
-    # async def _stop(self, ctx: commands.Context):
-    #     """Stops playing song and clears the queue."""
+    @app_commands.command(
+        name='stop',
+        description='Stops the music player and clears the queue'
+    )
+    async def _stop(self, ctx: discord.Interaction):
+        qm = self.get_queue_manager(ctx)
+        qm.songs.clear()
+        await self.bot.audio_player._stop(ctx)
+        
+        del qm
+        
+        await ctx.response.send_message(f'Stopped the music player.')
 
-    #     ctx.voice_state.songs.clear()
+    @app_commands.command(
+        name='skip',
+        description='Skip the current song'
+    )
+    async def _skip(self, ctx: discord.Interaction):
+        """Vote to skip a song. The requester can automatically skip.
+        3 skip votes are needed for the song to be skipped.
+        """
+        
+        qm = self.get_queue_manager(ctx)
+        if not qm.is_playing(ctx):
+            return await ctx.send('Not playing any music currently.')
+        
+        qm.skip(ctx)
+        await ctx.response.send_message(f'Skipped the current song.')
 
-    #     if ctx.voice_state.is_playing:
-    #         ctx.voice_state.voice.stop()
-    #         await ctx.message.add_reaction('⏹')
+    @app_commands.command(
+        name='queue',
+        description='Show the player\'s queue'
+    )
+    async def _queue(self, ctx: discord.Interaction, *, page: int = 1):
+        qm = self.get_queue_manager(ctx)
+        if len(qm.songs) == 0:
+            return await ctx.response.send_message('Empty queue.')
 
-    # @commands.command(name='skip', aliases=['sk'])
-    # async def _skip(self, ctx: commands.Context):
-    #     """Vote to skip a song. The requester can automatically skip.
-    #     3 skip votes are needed for the song to be skipped.
-    #     """
+        items_per_page = 10
+        pages = math.ceil(len(qm.songs) / items_per_page)
 
-    #     if not ctx.voice_state.is_playing:
-    #         return await ctx.send('Not playing any music right now...')
+        start = (page - 1) * items_per_page
+        end = start + items_per_page
 
-    #     voter = ctx.message.author
-    #     if voter == ctx.voice_state.current.requester:
-    #         await ctx.message.add_reaction('⏭')
-    #         ctx.voice_state.skip()
+        queue = ''
+        for i, song in enumerate(qm.songs[start:end], start=start):
+            queue += '`{0}.` [**{1.source.title}**]({1.source.url})\n'.format(i + 1, song)
 
-    #     elif voter.id not in ctx.voice_state.skip_votes:
-    #         ctx.voice_state.skip_votes.add(voter.id)
-    #         total_votes = len(ctx.voice_state.skip_votes)
+        embed = (discord.Embed(description='**{} tracks:**\n\n{}'.format(len(qm.songs), queue))
+                 .set_footer(text='Viewing page {}/{}'.format(page, pages)))
+        await ctx.response.send_message(embed=embed)
 
-    #         if total_votes >= 3:
-    #             await ctx.message.add_reaction('⏭')
-    #             ctx.voice_state.skip()
-    #         else:
-    #             await ctx.send('Skip vote added, currently at **{}/3**'.format(total_votes))
+    @app_commands.command(
+        name='shuffle',
+        description='Shuffle the queue.'
+    )
+    async def _shuffle(self, ctx: discord.Interaction):
+        qm = self.get_queue_manager(ctx)
+        if len(qm.songs) == 0:
+            return await ctx.response.send_message('Empty queue.')
 
-    #     else:
-    #         await ctx.send('You have already voted to skip this song.')
+        qm.songs.shuffle()
+        return await ctx.response.send_message('Queue shuffled.')
 
-    # @commands.command(name='queue', aliases=['q'])
-    # async def _queue(self, ctx: commands.Context, *, page: int = 1):
-    #     """Shows the player's queue.
+    @app_commands.command(
+        name='remove',
+        description='Remove a song'
+    )
+    async def _remove(self, ctx: discord.Interaction, index: int):
+        qm = self.get_queue_manager(ctx)
+        if len(qm.songs) == 0:
+            return await ctx.response.send_message('Empty queue.')
+        name = str(qm.songs[index - 1].source)
+        qm.songs.remove(index - 1)
+        return await ctx.response.send_message(f'Removed {name}')
 
-    #     You can optionally specify the page to show. Each page contains 10 elements.
-    #     """
+    @app_commands.command(
+        name='loop',
+        description='Toggle loop'
+    )
+    async def _loop(self, ctx: discord.Interaction):
+        qm = self.get_queue_manager(ctx)
+        if len(qm.songs) == 0:
+            return await ctx.response.send_message('Nothing being played at the moment.')
 
-    #     if len(ctx.voice_state.songs) == 0:
-    #         return await ctx.send('Empty queue.')
-
-    #     items_per_page = 10
-    #     pages = math.ceil(len(ctx.voice_state.songs) / items_per_page)
-
-    #     start = (page - 1) * items_per_page
-    #     end = start + items_per_page
-
-    #     queue = ''
-    #     for i, song in enumerate(ctx.voice_state.songs[start:end], start=start):
-    #         queue += '`{0}.` [**{1.source.title}**]({1.source.url})\n'.format(i + 1, song)
-
-    #     embed = (discord.Embed(description='**{} tracks:**\n\n{}'.format(len(ctx.voice_state.songs), queue))
-    #              .set_footer(text='Viewing page {}/{}'.format(page, pages)))
-    #     await ctx.send(embed=embed)
-
-    # @commands.command(name='shuffle')
-    # async def _shuffle(self, ctx: commands.Context):
-    #     """Shuffles the queue."""
-
-    #     if len(ctx.voice_state.songs) == 0:
-    #         return await ctx.send('Empty queue.')
-
-    #     ctx.voice_state.songs.shuffle()
-    #     await ctx.message.add_reaction('✅')
-
-    # @commands.command(name='remove')
-    # async def _remove(self, ctx: commands.Context, index: int):
-    #     """Removes a song from the queue at a given index."""
-
-    #     if len(ctx.voice_state.songs) == 0:
-    #         return await ctx.send('Empty queue.')
-
-    #     ctx.voice_state.songs.remove(index - 1)
-    #     await ctx.message.add_reaction('✅')
-
-    # @commands.command(name='loop')
-    # async def _loop(self, ctx: commands.Context):
-    #     """Loops the currently playing song.
-
-    #     Invoke this command again to unloop the song.
-    #     """
-
-    #     if not ctx.voice_state.is_playing:
-    #         return await ctx.send('Nothing being played at the moment.')
-
-    #     # Inverse boolean value to loop and unloop.
-    #     ctx.voice_state.loop = not ctx.voice_state.loop
-    #     await ctx.message.add_reaction('✅')
+        qm.loop = not qm.loop
+        if qm.loop:
+            return await ctx.response.send_message(f'Looping {str(qm.current.source)}.')
+        else:
+            return await ctx.response.send_message('No longer looping.')
 
     @app_commands.command(
         name='play',
@@ -445,16 +433,6 @@ class MusicCog(commands.Cog):
         await qm.songs.put(song)
         
         await ctx.followup.send('Enqueued {}'.format(str(source)))
-
-    # @_join.before_invoke
-    # @_play.before_invoke
-    # async def ensure_voice_state(self, ctx: commands.Context):
-    #     if not ctx.author.voice or not ctx.author.voice.channel:
-    #         raise commands.CommandError('You are not connected to any voice channel.')
-
-    #     if ctx.voice_client:
-    #         if ctx.voice_client.channel != ctx.author.voice.channel:
-    #             raise commands.CommandError('Bot is already in a voice channel.')
 
     
 async def setup(bot: commands.Bot):
