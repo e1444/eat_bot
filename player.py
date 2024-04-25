@@ -4,7 +4,7 @@ from discord import app_commands
 
 import audioop
 
-from typing import Optional
+from typing import Optional, Callable, Any
 
 
 class MultiSource(discord.AudioSource):
@@ -63,7 +63,7 @@ class AudioPlayer:
         self.bot: commands.Bot = bot
         self.voice_states: dict[str, VoiceState] = dict()
         
-    def get_voice_state(self, ctx: discord.Interaction):
+    def _get_voice_state(self, ctx: discord.Interaction) -> VoiceState:
         state = self.voice_states.get(ctx.guild_id)
         
         if not state:
@@ -73,11 +73,11 @@ class AudioPlayer:
         return state
     
     async def _is_joined(self, ctx):
-        voice_state = self.get_voice_state(ctx)
+        voice_state = self._get_voice_state(ctx)
         return bool(voice_state.voice)
     
     async def _join(self, ctx: discord.Interaction, *, channel: discord.VoiceChannel=None):
-        voice_state = self.get_voice_state(ctx)
+        voice_state = self._get_voice_state(ctx)
         
         if not channel and not ctx.user.voice:
             # await ctx.response.send_message('You are neither connected to a voice channel nor specified a channel to join.', ephemeral=True)
@@ -90,11 +90,12 @@ class AudioPlayer:
             return
         else:
             voice_state.voice = await destination.connect()
-            
+        
+        return destination
         # await ctx.response.send_message(f'Connected to <#{destination.id}>')
     
-    async def _leave(self, ctx: discord.Interaction, *, channel: discord.VoiceChannel=None):
-        voice_state = self.get_voice_state(ctx)
+    async def _leave(self, ctx: discord.Interaction):
+        voice_state = self._get_voice_state(ctx)
         if not voice_state.voice:
             # return await ctx.send('Not connected to any voice channel.')
             pass
@@ -102,12 +103,22 @@ class AudioPlayer:
         await voice_state.stop()
         del self.voice_states[ctx.guild_id]
         
-    async def _play(self, ctx: discord.Interaction, source: discord.AudioSource):
-        voice_state = self.get_voice_state(ctx)
+    async def _pause(self, ctx: discord.Interaction):
+        voice_state = self._get_voice_state(ctx)
+        if voice_state.voice.is_playing():
+            voice_state.voice.pause()
+    
+    async def _resume(self, ctx: discord.Interaction):
+        voice_state = self._get_voice_state(ctx)
+        if voice_state.voice.is_paused():
+            voice_state.voice.resume()
+        
+    async def _play(self, ctx: discord.Interaction, source: discord.AudioSource, *, after: Optional[Callable[[Optional[Exception]], Any]] = None):
+        voice_state = self._get_voice_state(ctx)
         
         if not voice_state.source or voice_state.source._done:
             voice_state.source = MultiSource([source])
-            voice_state.voice.play(voice_state.source)
+            voice_state.voice.play(voice_state.source, after=after)
         else:
             voice_state.source.add_source(source)
         
