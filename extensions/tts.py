@@ -51,13 +51,13 @@ class TTSCog(commands.Cog):
         if not await self.bot.audio_player._is_joined(ctx):
             await self.bot.audio_player._join(ctx)
             
-        self.bot.audio_player._play(ctx, source)
+        await self.bot.audio_player._play(ctx, source)
         
         await ctx.followup.send(content='Message spoken')
         
     @app_commands.command(
         name='sample',
-        description='play a sound'
+        description='Play a sound'
     )
     async def test(self, ctx: discord.Interaction):
         await ctx.response.defer()
