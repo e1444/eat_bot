@@ -24,3 +24,5 @@ snake_gatcha/inventories.json
 data/count.json
 data/debt.json
 snake_gatcha/inventories.json
+extensions/__pycache__/automsg.cpython-311.pyc
+data/automsg.json

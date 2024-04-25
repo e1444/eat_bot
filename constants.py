@@ -19,9 +19,9 @@ EXTENSIONS = ('extensions.snake',
               'extensions.shark', 
               'extensions.eat', 
               'extensions.music', 
-            #   'extensions.old_music', 
               'extensions.tts', 
-              'extensions.america')
+              'extensions.america',
+              'extensions.automsg')
 
 GUILDS = [discord.Object(id=1223665705048735846), discord.Object(id=1220725949323022336), discord.Object(id=1147644134312652840)]
 ADMIN_ID = 319162137392054272
@@ -33,6 +33,7 @@ COUNTER_PATH = 'data/count.json'
 JOKE_PATH = 'data/dad_jokes.csv'
 SG_PATH = 'snake_gatcha/inventories.json'
 DEBT_PATH = 'data/debt.json'
+AUTOMSG_PATH = 'data/automsg.json'
 
 # colours
 C_GRAY = '\u001b[0;30m'

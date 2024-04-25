@@ -44,10 +44,8 @@ def get_word_pos(word):
     return [synset.pos() for synset in synsets]
 
 class EatCog(commands.Cog):
-    bot: commands.Bot
-    
     def __init__(self, bot: commands.Bot):
-        self.bot = bot
+        self.bot: commands.Bot = bot
 
         with open(COUNTER_PATH, 'r') as file:
             self.counter = json.load(file)
