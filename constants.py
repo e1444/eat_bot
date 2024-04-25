@@ -34,6 +34,7 @@ JOKE_PATH = 'data/dad_jokes.csv'
 SG_PATH = 'snake_gatcha/inventories.json'
 DEBT_PATH = 'data/debt.json'
 AUTOMSG_PATH = 'data/automsg.json'
+TTS_HISTORY_PATH = 'data/tts_history.json'
 
 # colours
 C_GRAY = '\u001b[0;30m'

@@ -6,8 +6,11 @@ from bot import Bot
 import asyncio
 import audioop
 from typing import Optional
+import json
 
 import tts_request
+
+from constants import *
 
 YODA_SNAKE_WINNING_URL = 'https://storage.googleapis.com/vocodes-public/media/7/n/e/f/6/7nef61js0hbq9vvvv5666xbd29p44bfs/fakeyou_7nef61js0hbq9vvvv5666xbd29p44bfs.wav'
 
@@ -34,6 +37,9 @@ class TTSCog(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot: Bot = bot
         
+        with open(TTS_HISTORY_PATH, 'r') as file:
+            self.history = json.load(file)
+        
         print('---\tTTSCog loaded\t\t---')
         
     async def cog_app_command_error(self, ctx: discord.Interaction[discord.Client], error: app_commands.AppCommandError) -> None:
@@ -46,6 +52,9 @@ class TTSCog(commands.Cog):
     async def tts(self, ctx: discord.Interaction, *, text: str):
         await ctx.response.defer()
         url = await tts_request.request_tts_url(text)
+        self.history[text] = url
+        with open(TTS_HISTORY_PATH, 'w') as file:
+            json.dump(self.history, file)
         source = TTSSource.create_source(ctx, url)
         
         if not await self.bot.audio_player._is_joined(ctx):

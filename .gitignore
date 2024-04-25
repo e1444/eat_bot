@@ -26,3 +26,4 @@ data/debt.json
 snake_gatcha/inventories.json
 extensions/__pycache__/automsg.cpython-311.pyc
 data/automsg.json
+data/tts_history.json
