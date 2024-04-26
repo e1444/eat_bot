@@ -6,6 +6,7 @@ import pandas as pd
 import json
 import re
 import random
+import numpy
 import asyncio
 import time
 
@@ -17,6 +18,7 @@ from llm_help import random_encounter_script, saladify
 
 # ignored channels
 IGNORE_CHS = [1222219765049851964]
+AMERICAN_EMOJIS = [':flag_us:', ':gun:', ':fire:', ':eagle:', ':boom:', ':hamburger:', ':100:', ':skull_crossbones:']
         
 # preprocessing
 remove_quote = re.compile(r'^>')
@@ -43,6 +45,12 @@ def get_word_pos(word):
     synsets = wordnet.synsets(word)
     return [synset.pos() for synset in synsets]
 
+def random_emojis(emoji_list: list[str]) -> str:
+    random.shuffle(emoji_list)
+    emoji_list = [emoji * min(numpy.random.poisson(6), 10) for emoji in emoji_list]
+    return ''.join(emoji_list)
+    
+
 class EatCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot: commands.Bot = bot
@@ -53,6 +61,7 @@ class EatCog(commands.Cog):
         # on message patterns
         self.eat_pattern = re.compile(r'(e\s*a\s*t[!?]*)', re.IGNORECASE)
         self.damn_pattern = re.compile(r'(damn)', re.IGNORECASE)
+        self.rah_pattern = re.compile(r'(rah+)', re.IGNORECASE)
 
         with open(COUNTER_PATH, 'r') as file:
             self.counter = json.load(file)
@@ -115,6 +124,28 @@ class EatCog(commands.Cog):
             s = re.sub(double_star_pattern, '', s)
             s = re.sub(r'\n', '\n> ', s)
             s = f'> {s}\nbeavers be like'
+            
+            await message.channel.send(s)
+            
+    @commands.Cog.listener("on_message")
+    async def rah(self, message):
+        if message.author == self.bot.user:
+            return
+        
+        if message.channel.id in IGNORE_CHS:
+            return
+        
+        s = preprocess(message.content)
+        
+        if re.search(self.rah_pattern, s):
+            self.counter['rah_count'] += len(re.findall(self.damn_pattern, s))
+            with open(COUNTER_PATH, 'w') as file:
+                json.dump(self.counter, file)
+                
+            s = re.sub(self.rah_pattern, lambda x: f'**{x.group().upper()}**', s)
+            s = re.sub(double_star_pattern, '', s)
+            s = re.sub(r'\n', '\n> ', s)
+            s = f'> {s}\n{random_emojis(AMERICAN_EMOJIS)}'
             
             await message.channel.send(s)
         
