@@ -21,9 +21,8 @@ def random_encounter_script(noun: str) -> list[str]:
     return script
 
 def saladify(text: str) -> str:
-    system_prompt = """Turn the prompt into a word salad.
-Only use words from the prompt.
-Try to keep similar length to the original text."""
-    response = model.prompt(text, system_prompt)
+    text = """Turn the following prompt into a word salad. Only use words in the prompt.
+""" + text
+    response = model.prompt(text)
     
     return response.text()
