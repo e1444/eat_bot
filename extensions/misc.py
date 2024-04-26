@@ -6,6 +6,8 @@ import pandas as pd
 import requests
 import random
 
+from llm_help import saladify
+
 from constants import *
 
 class MiscCog(commands.Cog):

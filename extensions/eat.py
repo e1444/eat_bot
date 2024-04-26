@@ -13,7 +13,7 @@ from nltk.corpus import wordnet
 import image_help
 
 from constants import *
-from llm_help import random_encounter_script
+from llm_help import random_encounter_script, saladify
 
 # ignored channels
 IGNORE_CHS = [1222219765049851964]
@@ -87,6 +87,9 @@ class EatCog(commands.Cog):
             self.counter['eat_count'] += len(re.findall(self.eat_pattern, s))
             with open(COUNTER_PATH, 'w') as file:
                 json.dump(self.counter, file)
+                
+            if random.randrange(1, 10) == 1:
+                s = saladify(s)
                 
             s = re.sub(self.eat_pattern, lambda x: f'**{x.group().upper()}{generate_punc(4)}**', s)
             s = re.sub(double_star_pattern, '', s)
