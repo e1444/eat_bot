@@ -29,3 +29,4 @@ data/automsg.json
 data/tts_history.json
 data/w2v.model
 .vscode/settings.json
+data/dad_jokes.csv

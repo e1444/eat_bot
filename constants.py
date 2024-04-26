@@ -30,7 +30,7 @@ RANDOM_ENCOUNTER_PERIOD = 200
 
 # file paths
 COUNTER_PATH = 'data/count.json'
-JOKE_PATH = 'data/dad_jokes.csv'
+JOKE_PATH = 'data/dad_jokes.csv' # taken from https://www.kaggle.com/datasets/usamabuttar/dad-jokes
 SG_PATH = 'snake_gatcha/inventories.json'
 DEBT_PATH = 'data/debt.json'
 AUTOMSG_PATH = 'data/automsg.json'
