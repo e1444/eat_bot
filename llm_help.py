@@ -20,9 +20,43 @@ def random_encounter_script(noun: str) -> list[str]:
     
     return script
 
+from openai import OpenAI
+
+salad_messages = [
+    {
+        "role": "user",
+        "content": "Knowledge: \"Word salad: a jumble of extremely incoherent speech as sometimes observed in schizophrenia\"\n# Turn the following text into a word salad. Only use words in the prompt."
+    },
+    {
+        "role": "user",
+        "content": "text: <I might have to explain to my dogs why i can't stop laughing>\nSalad:"
+    },
+    {
+        "role": "assistant",
+        "content": "I dogs laughing explain might stop have can't my to why to have to I my dogs I stop to laughing."
+    },
+    {
+        "role": "user",
+        "content": "text: <Can u sex while pregat, dangerops will hurt baby top of his head!?!>\nSalad:"
+    },
+    {
+        "role": "assistant",
+        "content": "pregat head top baby sex hurt dangerops can while!?!"
+    }
+    ]
+
 def saladify(text: str) -> str:
-    text = """Turn the following prompt into a word salad. Only use words in the prompt.
-""" + text
-    response = model.prompt(text)
+    text = 'Text: <' + text + '>\nSalad:'
+    prompt = {'role': 'user', 'content': text}
     
-    return response.text()
+    client = OpenAI()
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=salad_messages + [prompt],
+        temperature=1,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    return response.choices[0].message.content 

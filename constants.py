@@ -23,7 +23,7 @@ EXTENSIONS = ('extensions.snake',
               'extensions.america',
               'extensions.automsg')
 
-GUILDS = [discord.Object(id=1223665705048735846), discord.Object(id=1220725949323022336), discord.Object(id=1147644134312652840)]
+GUILDS = [discord.Object(id=1223665705048735846), discord.Object(id=1220725949323022336), discord.Object(id=1147644134312652840), discord.Object(id=1221631514484150342)]
 ADMIN_ID = 319162137392054272
 
 RANDOM_ENCOUNTER_PERIOD = 200
