@@ -85,13 +85,44 @@ med_messages = [
     ]
 
 def medenglishify(text: str) -> str:
-    text = 'Text: <' + text.strip() + '>\Medieval English Text:'
+    text = 'Text: <' + text.strip() + '>\nMedieval English Text:'
     prompt = {'role': 'user', 'content': text}
     
     client = OpenAI()
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=med_messages + [prompt],
+        temperature=1,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    return response.choices[0].message.content 
+
+brit_messages = [
+        {
+            "role": "system",
+            "content": "You are an actor playing a old, snobby, British man."
+        },
+        {
+            "role": "user",
+            "content": "Add a British accent to the following text. Lengthen the text if it cannot be adequately modified.\nText: <Lol you’ve shown support/given attention that’s helpful>\nBritish Text:"
+        },
+        {
+            "role": "assistant",
+            "content": "Ah, my dear chap, you have demonstrated a most helpful show of support and attention. Your efforts are truly commendable, and I must say, it warms the cockles of my old, snobbish heart to see such kindness in this world. Jolly good show, indeed!"
+        }
+    ]
+
+def britify(text: str) -> str:
+    text = 'Text: <' + text.strip() + '>\nBritish Text:'
+    prompt = {'role': 'user', 'content': text}
+    
+    client = OpenAI()
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=brit_messages + [prompt],
         temperature=1,
         max_tokens=256,
         top_p=1,

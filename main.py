@@ -3,7 +3,7 @@ from bot import Bot
 from constants import *
 
 from discord import app_commands
-from llm_help import saladify, medenglishify
+from llm_help import saladify, medenglishify, britify
 
 if __name__ == '__main__':
     bot = Bot()
@@ -13,7 +13,7 @@ if __name__ == '__main__':
     )
     async def salad(interaction: discord.Interaction, message: discord.Message):
         if not message.content:
-            await interaction.response.send_message('screw you hestia (sorry if you aren\'t hestia)', ephemeral=True)
+            await interaction.response.send_message('Error: Empty text', ephemeral=True)
         await interaction.response.send_message(saladify(message.content))
         
     @bot.tree.context_menu(
@@ -21,7 +21,15 @@ if __name__ == '__main__':
     )
     async def medenglish(interaction: discord.Interaction, message: discord.Message):
         if not message.content:
-            await interaction.response.send_message('screw you hestia (sorry if you aren\'t hestia)', ephemeral=True)
+            await interaction.response.send_message('Error: Empty text', ephemeral=True)
         await interaction.response.send_message(medenglishify(message.content))
+        
+    @bot.tree.context_menu(
+        name='brit'
+    )
+    async def brit(interaction: discord.Interaction, message: discord.Message):
+        if not message.content:
+            await interaction.response.send_message('Error: Empty text', ephemeral=True)
+        await interaction.response.send_message(britify(message.content))
     
     bot.run(EAT_BOT_TOKEN)
