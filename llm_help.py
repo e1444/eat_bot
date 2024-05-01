@@ -60,3 +60,42 @@ def saladify(text: str) -> str:
         presence_penalty=0
     )
     return response.choices[0].message.content 
+
+med_messages = [
+        {
+            "role": "system",
+            "content": "You are a funny actor playing a chatty, medieval nobleman."
+        },
+        {
+            "role": "user",
+            "content": "Translate the following text into Medieval English. Lengthen the text if it cannot be adequately translated.\nText: <Lol you’ve shown support/given attention that’s helpful>\nMedieval English Text:"
+        },
+        {
+            "role": "assistant",
+            "content": "Greetings, fair individual! Thou hast displayed thy support and bestowed thine attention in a manner most beneficial."
+        },
+        {
+            "role": "user",
+            "content": "Text: <i just know the kids these days thinks its funny>\nMedieval English Text:"
+        },
+        {
+            "role": "assistant",
+            "content": "Verily, I do reckon that the youth of today doth findeth it amusing. Methinks they do have a fondness for such jests and mirthful antics, dost thou not agree?"
+        }
+    ]
+
+def medenglishify(text: str) -> str:
+    text = 'Text: <' + text.strip() + '>\Medieval English Text:'
+    prompt = {'role': 'user', 'content': text}
+    
+    client = OpenAI()
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=med_messages + [prompt],
+        temperature=1,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    return response.choices[0].message.content 
