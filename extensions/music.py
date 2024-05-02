@@ -75,9 +75,9 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return '**{0.title}** by **{0.uploader}**'.format(self)
 
     @classmethod
-    async def create_source(cls, ctx: discord.Interaction, search: str, *, loop: asyncio.BaseEventLoop = None):
+    async def create_sources(cls, ctx: discord.Interaction, search: str, *, loop: asyncio.BaseEventLoop = None):
         loop = loop or asyncio.get_event_loop()
-
+        
         partial = functools.partial(cls.ytdl.extract_info, search, download=False, process=False)
         data = await loop.run_in_executor(None, partial)
 
@@ -85,35 +85,35 @@ class YTDLSource(discord.PCMVolumeTransformer):
             raise YTDLError('Couldn\'t find anything that matches `{}`'.format(search))
 
         if 'entries' not in data:
-            process_info = data
+            urls = [data['url']]
         else:
-            process_info = None
-            for entry in data['entries']:
-                if entry:
-                    process_info = entry
-                    break
+            urls = [entry['url'] for entry in data['entries']]
 
-            if process_info is None:
+            if not urls:
                 raise YTDLError('Couldn\'t find anything that matches `{}`'.format(search))
 
-        webpage_url = process_info['webpage_url']
-        partial = functools.partial(cls.ytdl.extract_info, webpage_url, download=False)
-        processed_info = await loop.run_in_executor(None, partial)
+        info_list = list()
+        
+        for url in urls:
+            partial = functools.partial(cls.ytdl.extract_info, url, download=False)
+            processed_info = await loop.run_in_executor(None, partial)
+            
+            if 'entries' not in processed_info:
+                info = processed_info
+            else:
+                info = None
+                while info is None:
+                    try:
+                        info = processed_info['entries'].pop(0)
+                    except IndexError:
+                        raise YTDLError('Couldn\'t retrieve any matches for `{}`'.format(url))
 
-        if processed_info is None:
-            raise YTDLError('Couldn\'t fetch `{}`'.format(webpage_url))
+            if info is None:
+                raise YTDLError('Couldn\'t fetch `{}`'.format(url))
 
-        if 'entries' not in processed_info:
-            info = processed_info
-        else:
-            info = None
-            while info is None:
-                try:
-                    info = processed_info['entries'].pop(0)
-                except IndexError:
-                    raise YTDLError('Couldn\'t retrieve any matches for `{}`'.format(webpage_url))
+            info_list.append(info)
 
-        return cls(ctx, discord.FFmpegPCMAudio(info['url'], **cls.FFMPEG_OPTIONS), data=info)
+        return [cls(ctx, discord.FFmpegPCMAudio(info['url'], **cls.FFMPEG_OPTIONS), data=info) for info in info_list]
     
     def reset(self):
         discord.PCMVolumeTransformer.__init__(self, discord.FFmpegPCMAudio(self.data['url'], **self.FFMPEG_OPTIONS), self.volume)
@@ -185,7 +185,6 @@ class QueueManager:
     def __init__(self, bot: Bot, ctx: discord.Interaction):
         self.bot: Bot = bot
         self._ctx: discord.Interaction = ctx
-        self._done = False
 
         self.current: Song = None
         self.next: asyncio.Event = asyncio.Event()
@@ -229,12 +228,11 @@ class QueueManager:
                 # the player will disconnect due to performance
                 # reasons.
                 try:
-                    async with asyncio.timeout(3 * 60):  # 3 minutes todo change back
+                    async with asyncio.timeout(3 * 60):  # 3 minutes
                         self.current = await self.songs.get()
                 except asyncio.TimeoutError:
                     # disconnect
                     self.bot.loop.create_task(self.leave())
-                    self._done = True
                     return
                 
             self.current.source.reset()
@@ -263,6 +261,7 @@ class QueueManager:
     async def leave(self):
         self.stop()
         await self.bot.audio_player._leave(self._ctx)
+        self.audio_player.cancel()
 
 
 class MusicCog(commands.Cog):
@@ -275,7 +274,7 @@ class MusicCog(commands.Cog):
     def get_queue_manager(self, ctx: discord.Interaction) -> QueueManager:
         qm = self.queue_managers.get(ctx.guild.id)
         
-        if not qm or qm._done:
+        if not qm or qm.audio_player.done():
             qm = QueueManager(self.bot, ctx)
             self.queue_managers[ctx.guild.id] = qm
 
@@ -435,12 +434,11 @@ class MusicCog(commands.Cog):
             await self.bot.audio_player._join(ctx)
             
         await ctx.response.defer()
-        source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
-        song = Song(source)
+        sources = await YTDLSource.create_sources(ctx, search, loop=self.bot.loop)
         qm = self.get_queue_manager(ctx)
-        await qm.songs.put(song)
-        
-        await ctx.followup.send('Enqueued {}'.format(str(source)))
+        for source in sources:
+            await qm.songs.put(Song(source))
+            await ctx.followup.send('Enqueued {}'.format(str(source)))
 
     
 async def setup(bot: commands.Bot):
