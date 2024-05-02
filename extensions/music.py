@@ -229,7 +229,7 @@ class QueueManager:
                 # the player will disconnect due to performance
                 # reasons.
                 try:
-                    async with asyncio.timeout(3):  # 3 minutes todo change back
+                    async with asyncio.timeout(3 * 60):  # 3 minutes todo change back
                         self.current = await self.songs.get()
                 except asyncio.TimeoutError:
                     # disconnect
@@ -254,6 +254,8 @@ class QueueManager:
 
     def stop(self):
         self.songs.clear()
+        self.bot.audio_player._get_voice_state(self._ctx).source = None
+        self.bot.audio_player._resume(self._ctx)
         if self.is_playing(self._ctx):
             self.bot.audio_player._stop(self._ctx)
         self.next.set()
