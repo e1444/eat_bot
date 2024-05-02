@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 
 import audioop
+import copy
 
 from typing import Optional, Callable, Any
 
@@ -32,13 +33,18 @@ class MultiSource(discord.AudioSource):
     def read(self) -> bytes:
         ret = None
         
-        for source in self.sources:
+        for i in range(len(self.sources)):
+            source = self.sources[i]
             aret = source.read()
             if aret:
                 if ret:
                     ret = audioop.add(ret, aret, 2)
                 else:
                     ret = aret
+            else:
+                self.sources[i] = None
+                
+        self.sources = [source for source in self.sources if source]
         
         if ret:
             return audioop.mul(ret, 2, min(self._volume, 2.0))
@@ -72,11 +78,11 @@ class AudioPlayer:
 
         return state
     
-    async def _is_joined(self, ctx):
+    def _is_joined(self, ctx):
         voice_state = self._get_voice_state(ctx)
         return bool(voice_state.voice)
     
-    async def _is_playing(self, ctx):
+    def _is_playing(self, ctx):
         voice_state = self._get_voice_state(ctx)
         return voice_state.voice.is_playing()
     
@@ -105,19 +111,20 @@ class AudioPlayer:
             pass
         
         await voice_state.stop()
+        voice_state.source = None
         del self.voice_states[ctx.guild_id]
         
-    async def _pause(self, ctx: discord.Interaction):
+    def _pause(self, ctx: discord.Interaction):
         voice_state = self._get_voice_state(ctx)
         if voice_state.voice.is_playing():
             voice_state.voice.pause()
     
-    async def _resume(self, ctx: discord.Interaction):
+    def _resume(self, ctx: discord.Interaction):
         voice_state = self._get_voice_state(ctx)
         if voice_state.voice.is_paused():
             voice_state.voice.resume()
     
-    async def _stop(self, ctx: discord.Interaction):
+    def _stop(self, ctx: discord.Interaction):
         voice_state = self._get_voice_state(ctx)
         if voice_state.voice.is_playing():
             voice_state.voice.stop()

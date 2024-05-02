@@ -54,6 +54,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.requester = ctx.user
         self.channel = ctx.channel
         self.data = data
+        self.volume = volume
 
         self.uploader = data.get('uploader')
         self.uploader_url = data.get('uploader_url')
@@ -113,6 +114,9 @@ class YTDLSource(discord.PCMVolumeTransformer):
                     raise YTDLError('Couldn\'t retrieve any matches for `{}`'.format(webpage_url))
 
         return cls(ctx, discord.FFmpegPCMAudio(info['url'], **cls.FFMPEG_OPTIONS), data=info)
+    
+    def reset(self):
+        discord.PCMVolumeTransformer.__init__(self, discord.FFmpegPCMAudio(self.data['url'], **self.FFMPEG_OPTIONS), self.volume)
 
     @staticmethod
     def parse_duration(duration: int):
@@ -181,6 +185,7 @@ class QueueManager:
     def __init__(self, bot: Bot, ctx: discord.Interaction):
         self.bot: Bot = bot
         self._ctx: discord.Interaction = ctx
+        self._done = False
 
         self.current: Song = None
         self.next: asyncio.Event = asyncio.Event()
@@ -212,7 +217,7 @@ class QueueManager:
         self._volume = value
 
     def is_playing(self, ctx: discord.Interaction):
-        return self.current and self.bot.audio_player._is_playing(ctx)
+        return bool(self.current and self.bot.audio_player._is_playing(ctx))
 
     async def audio_player_task(self):
         while True:
@@ -224,33 +229,37 @@ class QueueManager:
                 # the player will disconnect due to performance
                 # reasons.
                 try:
-                    async with asyncio.timeout(3 * 60):  # 3 minutes
+                    async with asyncio.timeout(3):  # 3 minutes todo change back
                         self.current = await self.songs.get()
                 except asyncio.TimeoutError:
                     # disconnect
-                    self.bot.loop.create_task(self.stop())
+                    self.bot.loop.create_task(self.leave())
+                    self._done = True
                     return
-
-            # self.current.source.volume = self._volume
+                
+            self.current.source.reset()
             await self.bot.audio_player._play(self._ctx, self.current.source, after=self.play_next_song)
-            # self.voice.play(self.current.source, after=self.play_next_song)
             await self._ctx.channel.send(embed=self.current.create_embed())
-            # await self.current.source.channel.send(embed=self.current.create_embed())
-
+            
             await self.next.wait()
 
     def play_next_song(self, error=None):
         if error:
             raise VoiceError(str(error))
-
         self.next.set()
 
     def skip(self, ctx: discord.Interaction):
         if self.is_playing(ctx):
             self.bot.audio_player._stop(ctx)
 
-    async def stop(self):
+    def stop(self):
         self.songs.clear()
+        if self.is_playing(self._ctx):
+            self.bot.audio_player._stop(self._ctx)
+        self.next.set()
+
+    async def leave(self):
+        self.stop()
         await self.bot.audio_player._leave(self._ctx)
 
 
@@ -264,7 +273,7 @@ class MusicCog(commands.Cog):
     def get_queue_manager(self, ctx: discord.Interaction) -> QueueManager:
         qm = self.queue_managers.get(ctx.guild.id)
         
-        if not qm:
+        if not qm or qm._done:
             qm = QueueManager(self.bot, ctx)
             self.queue_managers[ctx.guild.id] = qm
 
@@ -272,7 +281,7 @@ class MusicCog(commands.Cog):
 
     def cog_unload(self):
         for state in self.queue_managers.values():
-            self.bot.loop.create_task(state.stop())
+            self.bot.loop.create_task(state.leave())
 
     async def cog_app_command_error(self, ctx: discord.Interaction[discord.Client], error: app_commands.AppCommandError) -> None:
         await ctx.response.send_message('An error occurred: {}'.format(str(error)))
@@ -307,7 +316,7 @@ class MusicCog(commands.Cog):
         description='Pause the music player'
     )
     async def _pause(self, ctx: discord.Interaction):
-        await self.bot.audio_player._pause(ctx)
+        self.bot.audio_player._pause(ctx)
         await ctx.response.send_message(f'Paused the music player.')
 
     @app_commands.command(
@@ -315,7 +324,7 @@ class MusicCog(commands.Cog):
         description='Resume the music player'
     )
     async def _resume(self, ctx: discord.Interaction):
-        await self.bot.audio_player._resume(ctx)
+        self.bot.audio_player._resume(ctx)
         await ctx.response.send_message(f'Resumed the music player.')
 
     @app_commands.command(
@@ -324,10 +333,7 @@ class MusicCog(commands.Cog):
     )
     async def _stop(self, ctx: discord.Interaction):
         qm = self.get_queue_manager(ctx)
-        qm.songs.clear()
-        await self.bot.audio_player._stop(ctx)
-        
-        del qm
+        qm.stop()
         
         await ctx.response.send_message(f'Stopped the music player.')
 
@@ -400,7 +406,7 @@ class MusicCog(commands.Cog):
     )
     async def _loop(self, ctx: discord.Interaction):
         qm = self.get_queue_manager(ctx)
-        if len(qm.songs) == 0:
+        if not qm.is_playing(ctx):
             return await ctx.response.send_message('Nothing being played at the moment.')
 
         qm.loop = not qm.loop
@@ -423,7 +429,7 @@ class MusicCog(commands.Cog):
         A list of these sites can be found here: https://rg3.github.io/youtube-dl/supportedsites.html
         """
 
-        if not await self.bot.audio_player._is_joined(ctx):
+        if not self.bot.audio_player._is_joined(ctx):
             await self.bot.audio_player._join(ctx)
             
         await ctx.response.defer()
