@@ -23,26 +23,26 @@ def random_encounter_script(noun: str) -> list[str]:
 from openai import OpenAI
 
 salad_messages = [
-    {
-        "role": "user",
-        "content": "Knowledge: \"Word salad: a jumble of extremely incoherent speech as sometimes observed in schizophrenia\"\n# Turn the following text into a word salad. Only use words in the prompt."
-    },
-    {
-        "role": "user",
-        "content": "text: <I might have to explain to my dogs why i can't stop laughing>\nSalad:"
-    },
-    {
-        "role": "assistant",
-        "content": "I dogs laughing explain might stop have can't my to why to have to I my dogs I stop to laughing."
-    },
-    {
-        "role": "user",
-        "content": "text: <Can u sex while pregat, dangerops will hurt baby top of his head!?!>\nSalad:"
-    },
-    {
-        "role": "assistant",
-        "content": "pregat head top baby sex hurt dangerops can while!?!"
-    }
+        {
+            "role": "user",
+            "content": "Knowledge: \"Word salad: a jumble of extremely incoherent speech as sometimes observed in schizophrenia\"\n# Turn the following text into a word salad. Only use words in the prompt."
+        },
+        {
+            "role": "user",
+            "content": "text: <I might have to explain to my dogs why i can't stop laughing>\nSalad:"
+        },
+        {
+            "role": "assistant",
+            "content": "I dogs laughing explain might stop have can't my to why to have to I my dogs I stop to laughing."
+        },
+        {
+            "role": "user",
+            "content": "text: <Can u sex while pregat, dangerops will hurt baby top of his head!?!>\nSalad:"
+        },
+        {
+            "role": "assistant",
+            "content": "pregat head top baby sex hurt dangerops can while!?!"
+        }
     ]
 
 def saladify(text: str) -> str:
@@ -130,3 +130,34 @@ def britify(text: str) -> str:
         presence_penalty=0
     )
     return response.choices[0].message.content 
+
+pirate_messages = [
+        {
+            "role": "system",
+            "content": "You are an actor playing a pirate."
+        },
+        {
+            "role": "user",
+            "content": "Add a pirate accent to the following text. Lengthen the text if it cannot be adequately modified.\nText: <Lol you’ve shown support/given attention that’s helpful>\nPirate Text:"
+        },
+        {
+            "role": "assistant",
+            "content": "Arrr, ye've shown yer support and given attention that be mighty helpful, matey! Yarrrr!"
+        }
+    ]
+
+def pirateify(text: str) -> str:
+    text = 'Text: <' + text.strip() + '>\nPirate Text:'
+    prompt = {'role': 'user', 'content': text}
+    
+    client = OpenAI()
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=pirate_messages + [prompt],
+        temperature=1,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    return response.choices[0].message.content
