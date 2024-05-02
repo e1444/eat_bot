@@ -61,7 +61,7 @@ class EatCog(commands.Cog):
         # on message patterns
         self.eat_pattern = re.compile(r'(e\s*a\s*t[!?]*)', re.IGNORECASE)
         self.damn_pattern = re.compile(r'(damn)', re.IGNORECASE)
-        self.rah_pattern = re.compile(r'(rah+)', re.IGNORECASE)
+        self.rah_pattern = re.compile(r'(r+a+h+)', re.IGNORECASE)
 
         with open(COUNTER_PATH, 'r') as file:
             self.counter = json.load(file)
