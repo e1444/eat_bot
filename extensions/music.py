@@ -9,6 +9,7 @@ import functools
 import itertools
 import math
 import random
+from typing import Union
 
 from bot import Bot
 
@@ -51,10 +52,11 @@ class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, ctx: discord.Interaction, source: discord.FFmpegPCMAudio, *, data: dict, volume: float = 0.5):
         super().__init__(source, volume)
 
-        self.requester = ctx.user
+        self.requester: Union[discord.User, discord.Member] = ctx.user
         self.channel = ctx.channel
         self.data = data
         self.volume = volume
+        self.count_20m: int = 0
 
         self.uploader = data.get('uploader')
         self.uploader_url = data.get('uploader_url')
@@ -136,14 +138,23 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         return ', '.join(duration)
 
+    def read(self) -> bytes:
+        data = super().read()
+        if data:
+            self.count_20ms += 1
+        return data
+    
+    @property
+    def progress(self) -> float:
+        return self.count_20ms * 0.02 # count_20ms * 20ms
 
 class Song:
     __slots__ = ('source', 'requester', '_start_time')
 
     def __init__(self, source: YTDLSource):
-        self.source = source
-        self.requester = source.requester
-        self._start_time = 0
+        self.source: YTDLSource = source
+        self.requester: Union[discord.User, discord.Member] = source.requester
+        self._start_time: int = 0
         
     def set_start_time(self):
         import time
