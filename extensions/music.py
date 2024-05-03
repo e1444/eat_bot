@@ -104,7 +104,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
                 info = None
                 while info is None:
                     try:
-                        info = processed_info['entries'].pop(0)
+                        info = processed_info['entries'][0]
                     except IndexError:
                         raise YTDLError('Couldn\'t retrieve any matches for `{}`'.format(url))
 
@@ -138,18 +138,22 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
 
 class Song:
-    __slots__ = ('source', 'requester')
+    __slots__ = ('source', 'requester', '_start_time')
 
     def __init__(self, source: YTDLSource):
         self.source = source
         self.requester = source.requester
+        self._start_time = 0
+        
+    def set_start_time(self):
+        import time
+        self._start_time = time.time()
 
     def create_embed(self):
-        import time
         embed = (discord.Embed(title='Now playing',
                                description='```\n{0.source.title}\n```'.format(self),
                                color = 16202876)
-                 .add_field(name='Progress', value=f'<t:{int(time.time()) + self.source.duration}:R>')
+                 .add_field(name='Remaining', value=f'<t:{int(self._start_time) + self.source.duration}:R>')
                  .add_field(name='Requested by', value=self.requester.mention)
                  .add_field(name='Uploader', value='[{0.source.uploader}]({0.source.uploader_url})'.format(self))
                  # .add_field(name='URL', value='[Click]({0.source.url})'.format(self))
@@ -192,7 +196,7 @@ class QueueManager:
 
         self._loop: bool = False
         self._volume: float = 1
-        self.skip_votes: set = set()
+        # self.skip_votes: set = set()
 
         self.audio_player: asyncio.Task = bot.loop.create_task(self.audio_player_task())
 
@@ -236,6 +240,7 @@ class QueueManager:
                     return
                 
             self.current.source.reset()
+            self.current.set_start_time()
             await self.bot.audio_player._play(self._ctx, self.current.source, after=self.play_next_song)
             await self._ctx.channel.send(embed=self.current.create_embed())
             
@@ -305,11 +310,13 @@ class MusicCog(commands.Cog):
         await ctx.response.send_message(f'Left the voice channel.')
 
     @app_commands.command(
-        name='current',
+        name='now',
         description='Displays the currently playing song'
     )
     async def _now(self, ctx: discord.Interaction):
         qm = self.get_queue_manager(ctx)
+        if not qm.is_playing(ctx):
+            return await ctx.response.send_message('Not playing any music currently.')
         await ctx.response.send_message(embed=qm.current.create_embed())
 
     @app_commands.command(
@@ -343,13 +350,9 @@ class MusicCog(commands.Cog):
         description='Skip the current song'
     )
     async def _skip(self, ctx: discord.Interaction):
-        """Vote to skip a song. The requester can automatically skip.
-        3 skip votes are needed for the song to be skipped.
-        """
-        
         qm = self.get_queue_manager(ctx)
         if not qm.is_playing(ctx):
-            return await ctx.send('Not playing any music currently.')
+            return await ctx.response.send_message('Not playing any music currently.')
         
         qm.skip(ctx)
         await ctx.response.send_message(f'Skipped the current song.')

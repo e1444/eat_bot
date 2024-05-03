@@ -116,17 +116,17 @@ class AudioPlayer:
         
     def _pause(self, ctx: discord.Interaction):
         voice_state = self._get_voice_state(ctx)
-        if voice_state.voice.is_playing():
+        if voice_state.voice and voice_state.voice.is_playing():
             voice_state.voice.pause()
     
     def _resume(self, ctx: discord.Interaction):
         voice_state = self._get_voice_state(ctx)
-        if voice_state.voice.is_paused():
+        if voice_state.voice and voice_state.voice.is_paused():
             voice_state.voice.resume()
     
     def _stop(self, ctx: discord.Interaction):
         voice_state = self._get_voice_state(ctx)
-        if voice_state.voice.is_playing():
+        if voice_state.voice and voice_state.voice.is_playing():
             voice_state.voice.stop()
             
         voice_state.source = None
