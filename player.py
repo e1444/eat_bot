@@ -84,7 +84,7 @@ class AudioPlayer:
     
     def _is_playing(self, ctx):
         voice_state = self._get_voice_state(ctx)
-        return voice_state.voice.is_playing()
+        return bool(voice_state.voice) and voice_state.voice.is_playing()
     
     async def _join(self, ctx: discord.Interaction, *, channel: discord.VoiceChannel=None):
         voice_state = self._get_voice_state(ctx)

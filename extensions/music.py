@@ -13,6 +13,10 @@ from typing import Union
 
 from bot import Bot
 
+LOADING_BAR_LENGTH = 10
+FULL_BLOCK_CH = '█'
+EMPTY_BLOCK_CH = ' '
+
 # Silence useless bug reports messages
 youtube_dl.utils.bug_reports_message = lambda: ''
 
@@ -50,13 +54,13 @@ class YTDLSource(discord.PCMVolumeTransformer):
     ytdl = youtube_dl.YoutubeDL(YTDL_OPTIONS)
 
     def __init__(self, ctx: discord.Interaction, source: discord.FFmpegPCMAudio, *, data: dict, volume: float = 0.5):
-        super().__init__(source, volume)
+        super().__init__(source)
 
         self.requester: Union[discord.User, discord.Member] = ctx.user
         self.channel = ctx.channel
         self.data = data
         self.volume = volume
-        self.count_20m: int = 0
+        self.count_20ms: int = 0
 
         self.uploader = data.get('uploader')
         self.uploader_url = data.get('uploader_url')
@@ -120,24 +124,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
     def reset(self):
         discord.PCMVolumeTransformer.__init__(self, discord.FFmpegPCMAudio(self.data['url'], **self.FFMPEG_OPTIONS), self.volume)
 
-    @staticmethod
-    def parse_duration(duration: int):
-        minutes, seconds = divmod(duration, 60)
-        hours, minutes = divmod(minutes, 60)
-        days, hours = divmod(hours, 24)
-
-        duration = []
-        if days > 0:
-            duration.append('{} days'.format(days))
-        if hours > 0:
-            duration.append('{} hours'.format(hours))
-        if minutes > 0:
-            duration.append('{} minutes'.format(minutes))
-        if seconds > 0:
-            duration.append('{} seconds'.format(seconds))
-
-        return ', '.join(duration)
-
     def read(self) -> bytes:
         data = super().read()
         if data:
@@ -160,13 +146,16 @@ class Song:
         import time
         self._start_time = time.time()
 
-    def create_embed(self):
+    def create_embed(self, *, percent: int = 0):
+        n_full_block = math.ceil(percent * LOADING_BAR_LENGTH)
+        n_empty_block = LOADING_BAR_LENGTH - n_full_block
         embed = (discord.Embed(title='Now playing',
                                description='```\n{0.source.title}\n```'.format(self),
                                color = 16202876)
                  .add_field(name='Remaining', value=f'<t:{int(self._start_time) + self.source.duration}:R>')
                  .add_field(name='Requested by', value=self.requester.mention)
                  .add_field(name='Uploader', value='[{0.source.uploader}]({0.source.uploader_url})'.format(self))
+                 .add_field(name='Progress', value=f'[{FULL_BLOCK_CH * n_full_block + EMPTY_BLOCK_CH * n_empty_block}]', inline=False)
                  # .add_field(name='URL', value='[Click]({0.source.url})'.format(self))
                  .set_thumbnail(url=self.source.thumbnail))
 
@@ -202,6 +191,7 @@ class QueueManager:
         self._ctx: discord.Interaction = ctx
 
         self.current: Song = None
+        self.current_player_message: discord.Message = None
         self.next: asyncio.Event = asyncio.Event()
         self.songs: SongQueue = SongQueue()
 
@@ -210,6 +200,7 @@ class QueueManager:
         # self.skip_votes: set = set()
 
         self.audio_player: asyncio.Task = bot.loop.create_task(self.audio_player_task())
+        self.progress_bar_updater: asyncio.Task = bot.loop.create_task(self.progress_bar_task())
 
     def __del__(self):
         self.audio_player.cancel()
@@ -253,11 +244,18 @@ class QueueManager:
             self.current.source.reset()
             self.current.set_start_time()
             await self.bot.audio_player._play(self._ctx, self.current.source, after=self.play_next_song)
-            await self._ctx.channel.send(embed=self.current.create_embed())
+            self.current_player_message = await self._ctx.channel.send(embed=self.current.create_embed())
             
             await self.next.wait()
+            
+    async def progress_bar_task(self):
+        while True:
+            if self.current and self.current_player_message:
+                await self.current_player_message.edit(embed=self.current.create_embed(percent=self.current.source.progress / self.current.source.duration))
+            await asyncio.sleep(1)
 
     def play_next_song(self, error=None):
+        self.current = None
         if error:
             raise VoiceError(str(error))
         self.next.set()
@@ -278,6 +276,7 @@ class QueueManager:
         self.stop()
         await self.bot.audio_player._leave(self._ctx)
         self.audio_player.cancel()
+        self.progress_bar_updater.cancel()
 
 
 class MusicCog(commands.Cog):
@@ -328,7 +327,8 @@ class MusicCog(commands.Cog):
         qm = self.get_queue_manager(ctx)
         if not qm.is_playing(ctx):
             return await ctx.response.send_message('Not playing any music currently.')
-        await ctx.response.send_message(embed=qm.current.create_embed())
+        await ctx.response.send_message(embed=qm.current.create_embed(percent=qm.current.source.progress / qm.current.source.duration))
+        qm.current_player_message = await ctx.original_response()
 
     @app_commands.command(
         name='pause',
