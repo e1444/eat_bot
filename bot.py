@@ -30,7 +30,7 @@ class Bot(commands.Bot):
         
         # load opus
         import ctypes.util
-        discord.opus.load_opus(ctypes.util.find_library('libopus'))
+        discord.opus.load_opus(ctypes.util.find_library('opus'))
         
         # check if opus is loaded
         if discord.opus.is_loaded():

@@ -14,7 +14,10 @@ from nltk.corpus import wordnet
 import image_help
 
 from constants import *
-from llm_help import random_encounter_script, saladify
+from llm_help import random_encounter_script, saladify, medenglishify, britify, pirateify
+
+def identity(x):
+    return x
 
 # ignored channels
 IGNORE_CHS = [1222219765049851964]
@@ -187,12 +190,17 @@ class EatCog(commands.Cog):
             
             script = random_encounter_script(name)
             
+            filter = identity
+            if random.random() < 1/10:
+                filter = random.choice([saladify, medenglishify, britify, pirateify])
+            
             persons = {
                 '@p1': message.channel,
                 '@p2': webhook
                 }
             for line in script:
-                await persons[line[0]].send(line[1])
+                await persons[line[0]].send(filter(line[1]))
+                
                 wait = line[1].count(' ') / 5
                 await asyncio.sleep(wait)
                 
@@ -202,7 +210,13 @@ class EatCog(commands.Cog):
         name="encounter",
         description="Creates an encounter"
     )
-    async def force_encounter(self, interaction: discord.Interaction, noun: str=None):
+    @app_commands.choices(filter=[
+        app_commands.Choice(name='salad', value='0'),
+        app_commands.Choice(name='oldeng', value='1'),
+        app_commands.Choice(name='brit', value='2'),
+        app_commands.Choice(name='pirate', value='3')
+    ])
+    async def force_encounter(self, interaction: discord.Interaction, *, noun: str=None, filter: app_commands.Choice[str] = None):
         await interaction.response.defer()
         
         name = None
@@ -236,12 +250,16 @@ class EatCog(commands.Cog):
         
         await interaction.followup.send(content='Encounter created')
         
+        filter_fn = identity
+        if filter:
+            filter_fn = [saladify, medenglishify, britify, pirateify][int(filter.value)]
+        
         persons = {
             '@p1': interaction.channel,
             '@p2': webhook
             }
         for line in script:
-            await persons[line[0]].send(line[1])
+            await persons[line[0]].send(filter_fn(line[1]))
             wait = line[1].count(' ') / 5
             await asyncio.sleep(wait)
         
