@@ -174,14 +174,17 @@ class EatCog(commands.Cog):
             tries = 0
             while image_bytes == None:
                 name = random.choice(self.nouns)
-                    
-                image_url = image_help.search_images(name)
-                if image_url:
-                    image_bytes = image_help.download_image(image_url)
-                    
+                
+                try:
+                    image_url = image_help.search_images(name)
+                    if image_url:
+                        image_bytes = image_help.download_image(image_url)
+                except Exception as e:
+                    print(e)
+                
                 tries += 1
                 if tries > 10:
-                    return
+                    break
                 
             
             name = name.split('_')
@@ -233,13 +236,10 @@ class EatCog(commands.Cog):
                     image_bytes = image_help.download_image(image_url)
             except Exception as e:
                 print(e)
-                await interaction.followup.send(content='Failed')
-                return
                 
             tries += 1
             if tries > 10:
-                await interaction.followup.send(content='Failed')
-                return
+                break
                 
         
         name = name.split('_')
