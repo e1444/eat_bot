@@ -3,7 +3,7 @@ from bot import Bot
 from constants import *
 
 from discord import app_commands
-from llm_help import saladify, medenglishify, britify, pirateify
+from llm_help import saladify, medenglishify, britify, pirateify, jkify
 
 if __name__ == '__main__':
     bot = Bot()
@@ -31,6 +31,14 @@ if __name__ == '__main__':
         if not message.content:
             await interaction.response.send_message('Error: Empty text', ephemeral=True)
         await interaction.response.send_message(britify(message.content))
+        
+    @bot.tree.context_menu(
+        name='snakechan'
+    )
+    async def jk(interaction: discord.Interaction, message: discord.Message):
+        if not message.content:
+            await interaction.response.send_message('Error: Empty text', ephemeral=True)
+        await interaction.response.send_message(jkify(message.content))
         
     @bot.tree.context_menu(
         name='pirate'

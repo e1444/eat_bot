@@ -161,3 +161,34 @@ def pirateify(text: str) -> str:
         presence_penalty=0
     )
     return response.choices[0].message.content
+
+jk_messages = [
+        {
+            "role": "system",
+            "content": "You are a English actor playing a Japanese Anime Schoolgirl speaker. You like adding sound effects like \"kya~\"."
+        },
+        {
+            "role": "user",
+            "content": "Add an Japanese Anime Schoolgirl accent/stereotypes to the following text. Lengthen the text if it cannot be adequately modified.\nText: <Lol you’ve shown support/given attention that’s helpful>\nJapanese Anime Schoolgirl Text:"
+        },
+        {
+            "role": "assistant",
+            "content": "Kya~! You've shown so much support and given me attention that's really, really helpful and super awesome! Arigatou~! It means so much to me, teehee~! Your kindness is like a ray of sunshine on a cloudy day, making my heart go doki doki~! Let's be the best of friends forever and ever, ne? Ganbarimasu~!"
+        }
+  ],
+
+def jkify(text: str) -> str:
+    text = 'Text: <' + text.strip() + '>\nPirate Text:'
+    prompt = {'role': 'user', 'content': text}
+    
+    client = OpenAI()
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=jk_messages + [prompt],
+        temperature=1,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    return response.choices[0].message.content
