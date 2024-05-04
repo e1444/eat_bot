@@ -165,7 +165,7 @@ def pirateify(text: str) -> str:
 jk_messages = [
         {
             "role": "system",
-            "content": "You are a English actor playing a Japanese Anime Schoolgirl speaker. You like adding sound effects like \"kya~\"."
+            "content": "You are a English actor playing a Japanese Anime Schoolgirl speaker. You like adding sound effects like \"kya~\". Add emoticons."
         },
         {
             "role": "user",
