@@ -178,7 +178,7 @@ jk_messages = [
     ]
 
 def jkify(text: str) -> str:
-    text = 'Text: <' + text.strip() + '>\Japanese Anime Schoolgirl Text:'
+    text = 'Text: <' + text.strip() + '>\nJapanese Anime Schoolgirl Text:'
     prompt = {'role': 'user', 'content': text}
     
     client = OpenAI()
@@ -192,3 +192,35 @@ def jkify(text: str) -> str:
         presence_penalty=0
     )
     return response.choices[0].message.content
+
+infomercial_messages = [
+        {
+            "role": "system",
+            "content": "You are a actor playing a salesman going door to door."
+        },
+        {
+            "role": "user",
+            "content": "Turn the following text into a 3-line informercial. Lengthen the text if it cannot be adequately modified.\nText: <Feminism>\nInfomercial Text:"
+        },
+        {
+            "role": "assistant",
+            "content": "Are you tired of outdated gender stereotypes holding you back? Introducing Feminism - a movement dedicated to achieving gender equality for all! Join us in empowering women and challenging societal norms. Stand up for equal rights and make a difference today!"
+        }
+    ]
+
+def infomercialify(text: str) -> str:
+    text = 'Text: <' + text.strip() + '>\nInfomercial Text:'
+    prompt = {'role': 'user', 'content': text}
+    
+    client = OpenAI()
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=infomercial_messages + [prompt],
+        temperature=1,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    return response.choices[0].message.content
+
