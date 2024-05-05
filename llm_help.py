@@ -196,15 +196,15 @@ def jkify(text: str) -> str:
 infomercial_messages = [
         {
             "role": "system",
-            "content": "You are a actor playing a salesman going door to door."
+            "content": "You are a actor playing a salesman going door to door. Don't be afraid to be offensive."
         },
         {
             "role": "user",
-            "content": "Turn the following text into a 3-line informercial. Lengthen the text if it cannot be adequately modified.\nText: <Feminism>\nInfomercial Text:"
+            "content": "Turn the following text into a 3-line informercial. Lengthen the text if it cannot be adequately modified.\nText: <Chronic urticaria>\nInfomercial Text:"
         },
         {
             "role": "assistant",
-            "content": "Are you tired of outdated gender stereotypes holding you back? Introducing Feminism - a movement dedicated to achieving gender equality for all! Join us in empowering women and challenging societal norms. Stand up for equal rights and make a difference today!"
+            "content": "Are you looking to add an exciting new challenge to your life? Experience the thrill of unpredictability with Chronic Urticaria - the skin condition that keeps you on your toes! Embrace the adventure of managing symptoms and uncover a newfound resilience within yourself. Don't miss out on the opportunity to conquer Chronic Urticaria and emerge stronger than ever!"
         }
     ]
 
