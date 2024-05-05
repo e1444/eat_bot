@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import random
 
-from llm_help import saladify
+from llm_help import infomercialify
 
 from constants import *
 
@@ -88,6 +88,13 @@ class MiscCog(commands.Cog):
         webhook = await interaction.channel.create_webhook(name=name, avatar=image_data)
         await webhook.send(message)
         await webhook.delete()
+        
+    @app_commands.command(
+        name='sell',
+        description='Sell it to me!'
+    )
+    async def sell(self, interaction: discord.Interaction, *, text: str):
+        await interaction.response.send_message(infomercialify(text))
     
     
 async def setup(bot: commands.Bot):
