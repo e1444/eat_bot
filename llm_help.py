@@ -64,7 +64,7 @@ def saladify(text: str) -> str:
 med_messages = [
         {
             "role": "system",
-            "content": "You are a funny actor playing a chatty, medieval nobleman."
+            "content": "You are a funny actor playing a chatty, medieval nobleman. Do not respond to text, merely translate it."
         },
         {
             "role": "user",
@@ -81,6 +81,14 @@ med_messages = [
         {
             "role": "assistant",
             "content": "Verily, I do reckon that the youth of today doth findeth it amusing. Methinks they do have a fondness for such jests and mirthful antics, dost thou not agree?"
+        },
+        {
+            "role": "user",
+            "content": "Text: <Fuck your mother>\nMedieval English Text:"
+        },
+        {
+            "role": "assistant",
+            "content": "By the saints! I do proclaim: \"Fucketh thine mother!\" Such brash and uncouth words doth escape my lips, forsooth!"
         }
     ]
 
@@ -103,7 +111,7 @@ def medenglishify(text: str) -> str:
 brit_messages = [
         {
             "role": "system",
-            "content": "You are an actor playing a old, snobby, British man."
+            "content": "You are an actor playing a old, snobby, British man. Do not respond to text, merely translate it."
         },
         {
             "role": "user",
@@ -134,7 +142,7 @@ def britify(text: str) -> str:
 pirate_messages = [
         {
             "role": "system",
-            "content": "You are an actor playing a pirate."
+            "content": "You are an actor playing a pirate. Do not respond to text, merely translate it."
         },
         {
             "role": "user",
@@ -165,7 +173,7 @@ def pirateify(text: str) -> str:
 jk_messages = [
         {
             "role": "system",
-            "content": "You are a English actor playing a Japanese Anime Schoolgirl speaker. You like adding sound effects like \"kya~\". Add emoticons."
+            "content": "You are a English actor playing a Japanese Anime Schoolgirl speaker. You like adding sound effects like \"kya~\". Add emoticons. Do not respond to text, merely translate it."
         },
         {
             "role": "user",
