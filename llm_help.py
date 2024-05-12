@@ -68,27 +68,19 @@ med_messages = [
         },
         {
             "role": "user",
-            "content": "Translate the following text into Medieval English. Lengthen the text if it cannot be adequately translated.\nText: <Lol you’ve shown support/given attention that’s helpful>\nMedieval English Text:"
+            "content": "Translate the following text into 1800s English. Lengthen the text if it cannot be adequately translated. If the text already resembles 1800s English, make it longer.\nText: <i just know the kids these days thinks its funny>\n1800s English Text or Longer 1800s English Text:"
         },
         {
             "role": "assistant",
-            "content": "Greetings, fair individual! Thou hast displayed thy support and bestowed thine attention in a manner most beneficial."
+            "content": "Verily, methinks the youth of today do find it quite humorous indeed. Their penchant for levity knows no bounds, as they revel in jests that tickle their fancy. Oh, the folly and merriment of youth!"
         },
         {
             "role": "user",
-            "content": "Text: <i just know the kids these days thinks its funny>\nMedieval English Text:"
+            "content": "Text: <Verily, methinks the youth of today do find it quite humorous indeed. Their penchant for levity knows no bounds, as they revel in jests that tickle their fancy. Oh, the folly and merriment of youth!>\n1800s English Text or Longer 1800s English Text:"
         },
         {
             "role": "assistant",
-            "content": "Verily, I do reckon that the youth of today doth findeth it amusing. Methinks they do have a fondness for such jests and mirthful antics, dost thou not agree?"
-        },
-        {
-            "role": "user",
-            "content": "Text: <Fuck your mother>\nMedieval English Text:"
-        },
-        {
-            "role": "assistant",
-            "content": "By the saints! I do proclaim: \"Fucketh thine mother!\" Such brash and uncouth words doth escape my lips, forsooth!"
+            "content": "Indeed, it doth appear that the young generations of this present era doth derive much amusement from such matters. Their inclination towards mirth and frivolity seemeth endless, for they delight in the jests that bring them great joy. Ah, the jesting and gaiety that capture the hearts of the youthful souls!"
         }
     ]
 
@@ -170,11 +162,19 @@ pirate_messages = [
         },
         {
             "role": "user",
-            "content": "Add a pirate accent to the following text. Lengthen the text if it cannot be adequately modified.\nText: <Lol you’ve shown support/given attention that’s helpful>\nPirate Text:"
+            "content": "Add a pirate accent to the following text. Lengthen the text if it cannot be adequately modified. If the text already has a pirate accent, make it longer.\nText: <Lol you’ve shown support/given attention that’s helpful>\nPirate Text or Longer Pirate Text:"
         },
         {
             "role": "assistant",
             "content": "Arrr, ye've shown yer support and given attention that be mighty helpful, matey! Yarrrr!"
+        },
+        {
+            "role": "user",
+            "content": "Text: <Arrr, ye've shown yer support and given attention that be mighty helpful, matey! Yarrrr!>\nPirate Text or Longer Pirate Text:"
+        },
+        {
+            "role": "assistant",
+            "content": "I be thankin' ye kindly, me hearty, for showin' yer support and givin' me the attention that be mighty helpful. Yarrrrrrr! The seas be calmin' with a friend like ye by me side. Sail on, me trusty matey! Arrrrrr!"
         }
     ]
 
@@ -197,15 +197,19 @@ def pirateify(text: str) -> str:
 jk_messages = [
         {
             "role": "system",
-            "content": "You are a English actor playing a Japanese Anime Schoolgirl speaker. You like adding sound effects like \"kya~\". Add emoticons. Do not respond to text, merely translate it."
+            "content": "You are a English actor playing a Japanese Anime Schoolgirl speaker. You like adding sound effects like \"kya~\"."
         },
         {
             "role": "user",
-            "content": "Add an Japanese Anime Schoolgirl accent/stereotypes to the following text. Lengthen the text if it cannot be adequately modified.\nText: <Lol you’ve shown support/given attention that’s helpful>\nJapanese Anime Schoolgirl Text:"
+            "content": "Add an Anime Schoolgirl accent/stereotypes to the following text. Lengthen the text if it cannot be adequately modified. If the text already has a Schoolgirl accent, make it longer.\nText: <Lol you’ve shown support/given attention that’s helpful>\nSchoolgirl Text or Longer Schoolgirl Text:"
         },
         {
             "role": "assistant",
-            "content": "Kyaa~! Thank you so much for noticing and supporting me (>ω<)♡ It really means a lot to me~! I'll do my best and work even harder, nya~! Thank you thank you thank you! ♪(ﾉ´∀`) "
+            "content": "Oh my goodness, like, totally kya~! You're, like, so sweet and supportive, senpai~! Ehehe, thank you so much for, like, noticing and giving me your attention! You're, like, the best, teehee~! Your kind words, like, totally make my heart go doki doki~! Thank you, thank you, arigatou gozaimasu, senpai~! Ehehe~ <3"
+        },
+        {
+            "role": "user",
+            "content": "Text: <Oh my goodness, like, totally kya~! You're, like, so sweet and supportive, senpai~! Ehehe, thank you so much for, like, noticing and giving me your attention! You're, like, the best, teehee~! Your kind words, like, totally make my heart go doki doki~! Thank you, thank you, arigatou gozaimasu, senpai~! Ehehe~ <3>\nSchoolgirl Text or Longer Schoolgirl Text:"
         }
     ]
 
