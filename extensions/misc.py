@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import random
 
-from llm_help import infomercialify
+from llm_help import infomercialify, saladify, medenglishify, britify, pirateify
 
 from constants import *
 
@@ -95,6 +95,26 @@ class MiscCog(commands.Cog):
     )
     async def sell(self, interaction: discord.Interaction, *, text: str):
         await interaction.response.send_message(infomercialify(text))
+    
+    @app_commands.command(
+        name='accent',
+        description='Translates a message into an accent'
+    )
+    @app_commands.choices(accent=[
+        app_commands.Choice(name='salad', value='0'),
+        app_commands.Choice(name='oldeng', value='1'),
+        app_commands.Choice(name='brit', value='2'),
+        app_commands.Choice(name='pirate', value='3')
+    ])
+    async def impersonate(self, interaction: discord.Interaction, accent: app_commands.Choice[str], message: str):
+        await interaction.response.send_message('Acknowledged', ephemeral=True)
+        user = interaction.user
+        image_data = requests.get(user.display_avatar).content
+        webhook = await interaction.channel.create_webhook(name=user.display_name, avatar=image_data)
+        
+        accent_fn = [saladify, medenglishify, britify, pirateify][int(accent.value)]
+        await webhook.send(accent_fn(message))
+        await webhook.delete()
     
     
 async def setup(bot: commands.Bot):
