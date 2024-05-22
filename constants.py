@@ -26,7 +26,7 @@ EXTENSIONS = ('extensions.snake',
 GUILDS = [discord.Object(id=1223665705048735846), discord.Object(id=1220725949323022336), discord.Object(id=1147644134312652840), discord.Object(id=1221631514484150342)]
 ADMIN_ID = 319162137392054272
 
-RANDOM_ENCOUNTER_PERIOD = 200
+RANDOM_ENCOUNTER_PERIOD = 500
 
 # file paths
 COUNTER_PATH = 'data/count.json'
@@ -48,9 +48,9 @@ C_WHITE = '\u001b[0;37m'
 C_END = '\u001b[0;0m'
 
 # LLM
-def PROMPT(noun: str) -> str:
+def PROMPT(noun: str, defn: str) -> str:
     return f"""Characters: @p1, @p2
-Background: @p2 is the personification "{noun}"
+Background: @p2 is the personification "{noun}", defined as "{defn}"
 Prompt: Generate a short conversation starting with @p2 introducing themself. End with @p1 eating @p2.
 """
 

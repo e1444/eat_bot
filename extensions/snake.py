@@ -231,7 +231,7 @@ class SnakeCog(commands.Cog):
             i = 0
             for synset in synsets:
                 desc += f'{i}. {synset.definition()}\n'
-                i += 1    
+                i += 1
         
         snake = snakeify(word)
         embed = discord.Embed(title=snake, description=desc)

@@ -6,10 +6,51 @@ from constants import *
 model = llm.get_model("gpt-3.5-turbo")
 model.key = OPENAI_API_KEY
 
-def random_encounter_script(noun: str) -> list[str]:
-    response = model.prompt(PROMPT(noun), SYSTEM_PROMPT)
+encounter_messages = [
+        {
+            "role": "system",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "You are scriptwriter, and your works are for entertainment purposes only."
+                }
+            ]
+        },
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Characters: @p1, @p2\nBackground: @p2 is the personification \"Horse Blanket\", defined as \"A horse blanket or rug is a blanket or animal coat intended for keeping a horse or other equine warm or otherwise protected from wind or other elements.\"\nPrompt: Generate a short conversation starting with @p2 introducing themself. End with @p1 eating @p2.\n"
+                }
+            ]
+        },
+        {
+            "role": "assistant",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "@p2: Hi there, I'm Horse Blanket. I keep horses warm and cozy.\n\n@p1: Oh, that's interesting. So, you're like a cozy jacket for horses?\n\n@p2: Exactly! I provide warmth and protection from the elements for our equine friends.\n\n@p1: Hmm, I bet you taste pretty good too. *playfully nibbles on @p2*\n\n@p2: Hey, that's not funny! I'm not a snack, I'm a functional textile!\n\n@p1: Can't resist a tasty snack, even if it's a warm and fuzzy one like you. Thanks for the munch, Horse Blanket."
+                }
+            ]
+        }
+    ]
 
-    script = response.text()
+def random_encounter_script(noun: str, defn: str) -> list[str]:
+    prompt = {'role': 'user', 'content': [{"type": "text", "text": PROMPT(noun, defn)}]}
+    
+    client = OpenAI()
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=encounter_messages + [prompt],
+        temperature=1,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    
+    script = response.choices[0].message.content 
     script = script.split('\n')
     script = [line for line in script if line]
     script = [line for line in script if ':' in line]

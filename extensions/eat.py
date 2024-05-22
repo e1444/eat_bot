@@ -164,7 +164,7 @@ class EatCog(commands.Cog):
         if message.guild.id in self.time:
             last_called = self.time[message.guild.id]
             
-        if random.random() < 1 / RANDOM_ENCOUNTER_PERIOD and time.time() > last_called + 5 * 60:
+        if random.random() < 1 / RANDOM_ENCOUNTER_PERIOD and time.time() > last_called + 15 * 60:
             self.time[message.guild.id] = time.time()
             
             name = None
@@ -185,13 +185,15 @@ class EatCog(commands.Cog):
                 tries += 1
                 if tries > 10:
                     break
-                
+            
+            synsets = wordnet.synsets(name)
+            defn = synsets[0].definition() 
             
             name = name.split('_')
             name = ' '.join([x.capitalize() for x in name])
             webhook = await message.channel.create_webhook(name=name, avatar=image_bytes)
             
-            script = random_encounter_script(name)
+            script = random_encounter_script(name, defn)
             
             filter = identity
             if random.random() < 1/10:
@@ -240,13 +242,18 @@ class EatCog(commands.Cog):
             tries += 1
             if tries > 10:
                 break
-                
+            
+        synsets = wordnet.synsets(name)
+        if synsets:
+            defn = synsets[0].definition()
+        else:
+            defn = 'No definition'
         
         name = name.split('_')
         name = ' '.join([x.capitalize() for x in name])
         webhook = await interaction.channel.create_webhook(name=name, avatar=image_bytes)
         
-        script = random_encounter_script(name)
+        script = random_encounter_script(name, defn)
         
         await interaction.followup.send(content='Encounter created')
         
