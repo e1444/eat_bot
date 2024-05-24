@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
 
-def centered_text_image(text: str, output_path: str, *, top_margin=50, font_path: str = 'assets/Arial.ttf', font_size=20, max_width=20, bg_color: str = "white", text_color: str = "black"):
+def centered_text_image(text: str, output_path: str, *, font_path: str = 'assets/Arial.ttf', font_size=20, max_width=20, bg_color: str = "white", text_color: str = "black"):
     # Load font
     font = ImageFont.truetype(font_path, font_size)
 
