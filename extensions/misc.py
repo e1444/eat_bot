@@ -7,8 +7,13 @@ import requests
 import random
 
 from llm_help import infomercialify, saladify, medenglishify, britify, pirateify
+from image_overlay_help import pirate_overlay
+from image_help import download_image
 
 from constants import *
+
+def identity_image(avt_url):
+    return download_image(avt_url)
 
 class MiscCog(commands.Cog):
     def __init__(self, bot):
@@ -106,15 +111,23 @@ class MiscCog(commands.Cog):
         app_commands.Choice(name='brit', value='2'),
         app_commands.Choice(name='pirate', value='3')
     ])
-    async def impersonate(self, interaction: discord.Interaction, accent: app_commands.Choice[str], message: str):
+    async def accent(self, interaction: discord.Interaction, *, accent: app_commands.Choice[str], message: str):
         await interaction.response.send_message('Acknowledged', ephemeral=True)
         user = interaction.user
-        image_data = requests.get(user.display_avatar).content
-        webhook = await interaction.channel.create_webhook(name=user.display_name, avatar=image_data)
         
         accent_fn = [saladify, medenglishify, britify, pirateify][int(accent.value)]
+        avt_fn = [identity_image, identity_image, identity_image, pirate_overlay][int(accent.value)]
+        webhook = await interaction.channel.create_webhook(name=user.display_name, avatar=avt_fn(user.display_avatar.url))
+        
         await webhook.send(accent_fn(message))
         await webhook.delete()
+    
+    @app_commands.command(
+        name='fetchavatar',
+        description='Returns the link to a users avatar'
+    )
+    async def impersonate(self, ctx: discord.Interaction, *, user: discord.Member):
+        await ctx.response.send_message(user.display_avatar.url)
     
     
 async def setup(bot: commands.Bot):

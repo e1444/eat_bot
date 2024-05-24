@@ -33,3 +33,11 @@ data/dad_jokes.csv
 test/
 makesweet/
 makeswee_cache/
+__pycache__/image_overlay_help.cpython-311.pyc
+heartlocket1.gif
+__pycache__/makesweet_gif.cpython-311.pyc
+__pycache__/textgen.cpython-311.pyc
+extensions/__pycache__/makesweet_ext.cpython-311.pyc
+makesweet_cache/1.png
+makesweet_cache/2.png
+makesweet_cache/3.gif
