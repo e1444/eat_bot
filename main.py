@@ -55,7 +55,12 @@ if __name__ == '__main__':
         if not message.content:
             await interaction.response.send_message('Error: Empty text', ephemeral=True)
         await interaction.response.send_message('Acknowledged', ephemeral=True)
-        await message.channel.send(psychoanalyse(message.content), reference=message)
+        with open('assets/freud.png', 'rb') as f:
+            # Read the image file as bytes
+            image_bytes = f.read()
+        webhook = await interaction.channel.create_webhook(name='Sigmund Freud', avatar=image_bytes)
+        await webhook.send(psychoanalyse(message.content))
+        await webhook.delete()
         
     
     bot.run(EAT_BOT_TOKEN)

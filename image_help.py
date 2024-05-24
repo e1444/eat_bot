@@ -1,5 +1,7 @@
 import requests
 from constants import *
+from PIL import Image
+from io import BytesIO
 
 def search_images(query):
     try:
@@ -55,13 +57,9 @@ def download_image(url):
         return None
 
 def save_image(image_bytes, filename):
-    try:
-        # Open the file in binary write mode and write the bytes to it
-        with open(filename, "wb") as f:
-            f.write(image_bytes)
-        print("Image saved successfully as", filename)
-    except Exception as e:
-        print("An error occurred while saving the image:", e)
+    image_io = BytesIO(image_bytes)
+    image = Image.open(image_io)
+    image.save(filename)
 
 if __name__ == "__main__":
     # Example keyword to search for an image

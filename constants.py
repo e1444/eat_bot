@@ -21,7 +21,8 @@ EXTENSIONS = ('extensions.snake',
               'extensions.music', 
               'extensions.tts', 
               'extensions.america',
-              'extensions.automsg')
+              'extensions.automsg',
+              'extensions.makesweet_ext')
 
 GUILDS = [discord.Object(id=1223665705048735846), discord.Object(id=1220725949323022336), discord.Object(id=1147644134312652840), discord.Object(id=1221631514484150342)]
 ADMIN_ID = 319162137392054272
