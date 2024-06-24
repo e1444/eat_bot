@@ -3,7 +3,7 @@ from bot import Bot
 from constants import *
 
 from discord import app_commands
-from llm_help import saladify, medenglishify, britify, pirateify, jkify, psychoanalyse
+from llm_help import saladify, medenglishify, britify, pirateify, jkify, brainrotify, psychoanalyse
 
 if __name__ == '__main__':
     bot = Bot()
@@ -40,13 +40,21 @@ if __name__ == '__main__':
             await interaction.response.send_message('Error: Empty text', ephemeral=True)
         await interaction.response.send_message(jkify(message.content))
         
+    # @bot.tree.context_menu(
+    #     name='pirate'
+    # )
+    # async def pirate(interaction: discord.Interaction, message: discord.Message):
+    #     if not message.content:
+    #         await interaction.response.send_message('Error: Empty text', ephemeral=True)
+    #     await interaction.response.send_message(pirateify(message.content))
+        
     @bot.tree.context_menu(
-        name='pirate'
+        name='brainrot'
     )
     async def pirate(interaction: discord.Interaction, message: discord.Message):
         if not message.content:
             await interaction.response.send_message('Error: Empty text', ephemeral=True)
-        await interaction.response.send_message(pirateify(message.content))
+        await interaction.response.send_message(brainrotify(message.content))
         
     @bot.tree.context_menu(
         name='freud'

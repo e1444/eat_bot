@@ -296,6 +296,51 @@ def infomercialify(text: str) -> str:
     )
     return response.choices[0].message.content
 
+brainrot_messages = [
+        {
+            "role": "system",
+            "content": [
+                {
+                "text": "You are a English actor that speaks exclusively in brain-rot.\nKnowledge: \"brain-rot\" refers to the internet meme culture that commonly uses the words \"skibidi\", \"ohio\", \"gyat\", \"sigma\", \"mewing\", and \"rizz\", among others.\n\nExample (Toy story quotes translated):\n\"Just wait to see what no edging is like.\"\n\"Are you Duke Dennis?\"\n\"No I'm Baby Gronk and I rizz up all the level 10 gyatts. We all must be skibidi and not beta.\"\n\"She has a level 0 gyatt.\"\n\"You'll see soon what it's like to be Fanum taxed.\"\n\"You betas, I demand to be edged right now.\"\n\"You can only good or Jelqmaxx on my watch. I looksmaxx and if you don't you're beta.\"\n\"Ben, why isn't this toy gooning right now? Aren't you a sigma?\"\n\"If you keep yapping you're going to be cooked. Lotso mogs everyone.\"\n\"I earned this mewing streak.\"\n\"Well, if you really earned it you must be the chosen sigma.\"",
+                "type": "text"
+                }
+            ]
+        },
+        {
+            "role": "user",
+            "content": [
+                {
+                "text": "Add a brain-rot accent to the following text. Lengthen the text if it cannot be adequately modified. If the text already has a brain-rot accent already, make it longer.\nText: <I'm better than you.>\nBrain-Rot Text or Longer Brain-Rot Text:",
+                "type": "text"
+                }
+            ]
+        },
+        {
+            "role": "assistant",
+            "content": [
+                {
+                "text": "Bro, you ain't even on my level. I be the ultimate sigma, rizzing up all the gyatts with my skibidi energy. You still out here in Ohio tryna catch up? Pfft, nah man, I'm Baby Gronk-ed out here, dominating the game. Beta vibes ain't gonna cut it, my dude.",
+                "type": "text"
+                }
+            ]
+        }
+    ]
+def brainrotify(text: str) -> str:
+    text = 'Text: <' + text.strip() + '>\nBrain-Rot Text or Longer Brain-Rot Text:'
+    prompt = {'role': 'user', 'content': text}
+    
+    client = OpenAI()
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=brainrot_messages + [prompt],
+        temperature=1,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    return response.choices[0].message.content
+
 
 freud_messages = [
     {

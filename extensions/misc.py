@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import random
 
-from llm_help import infomercialify, saladify, medenglishify, britify, pirateify
+from llm_help import infomercialify, saladify, medenglishify, britify, pirateify, brainrotify
 from image_overlay_help import pirate_overlay
 from image_help import download_image
 
@@ -109,14 +109,15 @@ class MiscCog(commands.Cog):
         app_commands.Choice(name='salad', value='0'),
         app_commands.Choice(name='oldeng', value='1'),
         app_commands.Choice(name='brit', value='2'),
-        app_commands.Choice(name='pirate', value='3')
+        app_commands.Choice(name='pirate', value='3'),
+        app_commands.Choice(name='brainrot', value='4')
     ])
     async def accent(self, interaction: discord.Interaction, *, accent: app_commands.Choice[str], message: str):
         await interaction.response.send_message('Acknowledged', ephemeral=True)
         user = interaction.user
         
-        accent_fn = [saladify, medenglishify, britify, pirateify][int(accent.value)]
-        avt_fn = [identity_image, identity_image, identity_image, pirate_overlay][int(accent.value)]
+        accent_fn = [saladify, medenglishify, britify, pirateify, brainrotify][int(accent.value)]
+        avt_fn = [identity_image, identity_image, identity_image, pirate_overlay, identity_image][int(accent.value)]
         webhook = await interaction.channel.create_webhook(name=user.display_name, avatar=avt_fn(user.display_avatar.url))
         
         await webhook.send(accent_fn(message))
