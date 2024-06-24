@@ -152,64 +152,64 @@ class EatCog(commands.Cog):
             
             await message.channel.send(s)
         
-    @commands.Cog.listener("on_message")
-    async def rand_eat(self, message: discord.Message):
-        if not message.guild:
-            return
+    # @commands.Cog.listener("on_message")
+    # async def rand_eat(self, message: discord.Message):
+    #     if not message.guild:
+    #         return
         
-        if message.channel.id in IGNORE_CHS:
-            return
+    #     if message.channel.id in IGNORE_CHS:
+    #         return
         
-        last_called = 0
-        if message.guild.id in self.time:
-            last_called = self.time[message.guild.id]
+    #     last_called = 0
+    #     if message.guild.id in self.time:
+    #         last_called = self.time[message.guild.id]
             
-        if random.random() < 1 / RANDOM_ENCOUNTER_PERIOD and time.time() > last_called + 15 * 60:
-            self.time[message.guild.id] = time.time()
+    #     if random.random() < 1 / RANDOM_ENCOUNTER_PERIOD and time.time() > last_called + 15 * 60:
+    #         self.time[message.guild.id] = time.time()
             
-            name = None
-            image_url = None
-            image_bytes = None
+    #         name = None
+    #         image_url = None
+    #         image_bytes = None
             
-            tries = 0
-            while image_bytes == None:
-                name = random.choice(self.nouns)
+    #         tries = 0
+    #         while image_bytes == None:
+    #             name = random.choice(self.nouns)
                 
-                try:
-                    image_url = image_help.search_images(name)
-                    if image_url:
-                        image_bytes = image_help.download_image(image_url)
-                except Exception as e:
-                    print(e)
+    #             try:
+    #                 image_url = image_help.search_images(name)
+    #                 if image_url:
+    #                     image_bytes = image_help.download_image(image_url)
+    #             except Exception as e:
+    #                 print(e)
                 
-                tries += 1
-                if tries > 10:
-                    break
+    #             tries += 1
+    #             if tries > 10:
+    #                 break
             
-            synsets = wordnet.synsets(name)
-            defn = synsets[0].definition() 
+    #         synsets = wordnet.synsets(name)
+    #         defn = synsets[0].definition() 
             
-            name = name.split('_')
-            name = ' '.join([x.capitalize() for x in name])
-            webhook = await message.channel.create_webhook(name=name, avatar=image_bytes)
+    #         name = name.split('_')
+    #         name = ' '.join([x.capitalize() for x in name])
+    #         webhook = await message.channel.create_webhook(name=name, avatar=image_bytes)
             
-            script = random_encounter_script(name, defn)
+    #         script = random_encounter_script(name, defn)
             
-            filter = identity
-            if random.random() < 1/10:
-                filter = random.choice([saladify, medenglishify, britify, pirateify])
+    #         filter = identity
+    #         if random.random() < 1/10:
+    #             filter = random.choice([saladify, medenglishify, britify, pirateify])
             
-            persons = {
-                '@p1': message.channel,
-                '@p2': webhook
-                }
-            for line in script:
-                await persons[line[0]].send(filter(line[1]))
+    #         persons = {
+    #             '@p1': message.channel,
+    #             '@p2': webhook
+    #             }
+    #         for line in script:
+    #             await persons[line[0]].send(filter(line[1]))
                 
-                wait = line[1].count(' ') / 5
-                await asyncio.sleep(wait)
+    #             wait = line[1].count(' ') / 5
+    #             await asyncio.sleep(wait)
                 
-            await webhook.delete()
+    #         await webhook.delete()
         
     @app_commands.command(
         name="encounter",
