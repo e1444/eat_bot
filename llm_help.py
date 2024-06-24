@@ -1,10 +1,7 @@
-import llm
+from openai import OpenAI
 import re
 
 from constants import *
-
-model = llm.get_model("gpt-3.5-turbo")
-model.key = OPENAI_API_KEY
 
 encounter_messages = [
         {
@@ -60,8 +57,6 @@ def random_encounter_script(noun: str, defn: str) -> list[str]:
     script = [(line[0], re.sub(r'@p2', noun, line[1])) for line in script]
     
     return script
-
-from openai import OpenAI
 
 salad_messages = [
         {
