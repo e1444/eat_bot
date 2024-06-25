@@ -130,7 +130,7 @@ class EatCog(commands.Cog):
             await message.channel.send(s)
         
     @commands.Cog.listener("on_message")
-    async def damn(self, message):
+    async def kurva(self, message):
         if message.author == self.bot.user:
             return
         
