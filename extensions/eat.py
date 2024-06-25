@@ -64,6 +64,7 @@ class EatCog(commands.Cog):
         # on message patterns
         self.eat_pattern = re.compile(r'(e\s*a\s*t[!?]*)', re.IGNORECASE)
         self.damn_pattern = re.compile(r'(damn)', re.IGNORECASE)
+        self.kurva_pattern = re.compile(r'(kurva)', re.IGNORECASE)
         self.rah_pattern = re.compile(r'(r+a+h+)', re.IGNORECASE)
 
         with open(COUNTER_PATH, 'r') as file:
@@ -129,6 +130,28 @@ class EatCog(commands.Cog):
             s = f'> {s}\nbeavers be like'
             
             await message.channel.send(s)
+        
+    @commands.Cog.listener("on_message")
+    async def damn(self, message):
+        if message.author == self.bot.user:
+            return
+        
+        if message.channel.id in IGNORE_CHS:
+            return
+        
+        s = preprocess(message.content)
+        
+        if re.search(self.kurva_pattern, s):
+            self.counter['kurva_count'] += len(re.findall(self.kurva_pattern, s))
+            with open(COUNTER_PATH, 'w') as file:
+                json.dump(self.counter, file)
+                
+            s = re.sub(self.kurva_pattern, lambda x: f'**{x.group()}**', s)
+            s = re.sub(double_star_pattern, '', s)
+            s = re.sub(r'\n', '\n> ', s)
+            s = f'> {s}\nkurva bobr'
+            
+            await message.channel.send(s)
             
     @commands.Cog.listener("on_message")
     async def rah(self, message):
@@ -141,7 +164,7 @@ class EatCog(commands.Cog):
         s = preprocess(message.content)
         
         if re.search(self.rah_pattern, s):
-            self.counter['rah_count'] += len(re.findall(self.damn_pattern, s))
+            self.counter['rah_count'] += len(re.findall(self.rah_pattern, s))
             with open(COUNTER_PATH, 'w') as file:
                 json.dump(self.counter, file)
                 
