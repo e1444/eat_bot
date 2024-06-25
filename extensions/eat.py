@@ -2,13 +2,11 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
-import pandas as pd
 import json
 import re
 import random
 import numpy
 import asyncio
-import time
 
 from nltk.corpus import wordnet
 import image_help
