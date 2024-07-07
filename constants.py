@@ -9,7 +9,10 @@ GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
 GOOGLE_CSE_ID = os.environ.get('GOOGLE_CSE_ID')
 YOUTUBE_ID = os.environ.get('GOOGLE_EMAIL')
 YOUTUBE_PW = os.environ.get('GOOGLE_EMAIL_PW')
-YOUTUBE_COOKIES = os.environ.get('YOUTUBE_COOKIES')
+# YOUTUBE_COOKIES = os.environ.get('YOUTUBE_COOKIES')
+
+print(YOUTUBE_ID)
+print(YOUTUBE_PW)
 
 # load corpus
 try:
@@ -21,9 +24,9 @@ EXTENSIONS = ('extensions.snake',
               'extensions.misc', 
               'extensions.shark', 
               'extensions.eat', 
-            #   'extensions.music', 
-              'extensions.old_music', 
-            #   'extensions.tts', 
+              # 'extensions.music', 
+              # 'extensions.old_music', 
+              # 'extensions.tts', 
               'extensions.america',
               'extensions.automsg',
               'extensions.makesweet_ext')

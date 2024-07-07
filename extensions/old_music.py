@@ -39,7 +39,8 @@ class YTDLSource(discord.PCMVolumeTransformer):
         'no_warnings': True,
         'default_search': 'auto',
         'source_address': '0.0.0.0',
-        '--add-header': f'Cookie:{YOUTUBE_COOKIES}'
+        'u': YOUTUBE_ID,
+        'p': YOUTUBE_PW
     }
 
     FFMPEG_OPTIONS = {
