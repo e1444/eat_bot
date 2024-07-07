@@ -1,4 +1,5 @@
 # Copyright (c) 2019 Valentin B.
+import discord
 from discord.ext import commands
 
 import asyncio
@@ -7,8 +8,9 @@ import itertools
 import math
 import random
 
-import discord
 import yt_dlp as youtube_dl
+
+from constants import *
 
 # Silence useless bug reports messages
 youtube_dl.utils.bug_reports_message = lambda: ''
@@ -37,6 +39,8 @@ class YTDLSource(discord.PCMVolumeTransformer):
         'no_warnings': True,
         'default_search': 'auto',
         'source_address': '0.0.0.0',
+        'username': YOUTUBE_ID,
+        'password': YOUTUBE_PW
     }
 
     FFMPEG_OPTIONS = {
