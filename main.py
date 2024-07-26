@@ -8,13 +8,13 @@ from llm_help import saladify, medenglishify, britify, pirateify, jkify, brainro
 if __name__ == '__main__':
     bot = Bot()
         
-    @bot.tree.context_menu(
-        name='salad'
-    )
-    async def salad(interaction: discord.Interaction, message: discord.Message):
-        if not message.content:
-            await interaction.response.send_message('Error: Empty text', ephemeral=True)
-        await interaction.response.send_message(saladify(message.content))
+    # @bot.tree.context_menu(
+    #     name='salad'
+    # )
+    # async def salad(interaction: discord.Interaction, message: discord.Message):
+    #     if not message.content:
+    #         await interaction.response.send_message('Error: Empty text', ephemeral=True)
+    #     await interaction.response.send_message(saladify(message.content))
         
     @bot.tree.context_menu(
         name='oldeng'
