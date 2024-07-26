@@ -70,5 +70,13 @@ if __name__ == '__main__':
         await webhook.send(psychoanalyse(message.content))
         await webhook.delete()
         
+    @bot.tree.context_menu(
+        name='delbotmsg'
+    )
+    async def salad(interaction: discord.Interaction, message: discord.Message):
+        if not message.author.id == EAT_BOT_ID:
+            await interaction.response.send_message('Error: Message not from bot', ephemeral=True)
+        await message.delete()
+        await interaction.response.send_message('Message successfully deleted', ephemeral=True)  
     
     bot.run(EAT_BOT_TOKEN)
